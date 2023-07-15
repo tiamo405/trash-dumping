@@ -17,7 +17,6 @@ weights/
 *.pyc
 *.avi
 *.jpg
-*.png
 *.txt
 github.sh
 __pycache__
