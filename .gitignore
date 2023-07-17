@@ -18,6 +18,7 @@ weights/
 *.avi
 *.jpg
 *.txt
+*.zip
 github.sh
 __pycache__
 det_results

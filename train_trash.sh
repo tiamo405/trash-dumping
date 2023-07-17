@@ -12,7 +12,7 @@ CUDA_VISIBLE_DEVICES=0 python train.py \
         --batch_size 8 \
         -accu 16 \
         -K 16 \
-        # --cuda
+        --cuda
 
 
 # CUDA_VISIBLE_DEVICES=0 python train.py \

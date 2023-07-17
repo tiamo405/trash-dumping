@@ -8,4 +8,4 @@
 
 # chia data thanh train test
 python trash/build_split.py \
-    --raw_path ./trash \
+    --raw_data ./trash \
