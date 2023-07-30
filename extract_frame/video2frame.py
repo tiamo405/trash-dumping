@@ -19,11 +19,12 @@ class Preprocessing :
 
         self.model_open_pose = None
         self.dir_data = opt.dir_data
+        self.dir_save = opt.dir_save
 
         self.label = opt.label
     def crop_video(self):
         
-        folder_save = self.dir_data
+        folder_save = self.dir_save
         folder_videos = os.path.join(self.dir_data, 'videos', self.label)
 
         os.makedirs(folder_save, exist_ok= True)
@@ -49,6 +50,7 @@ def get_opt():
     parser.add_argument('--dir_data', type=str, default= 'trash')
     parser.add_argument('--label', type=str, default='trashDumping')
     parser.add_argument('--weight_yolo', type= str, default='checkpoints/yolov5nu.pt')
+    parser.add_argument('--dir_save', type= str, default='trash')
     opt = parser.parse_args()
     return opt
 if __name__ == "__main__":

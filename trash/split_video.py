@@ -55,8 +55,42 @@ def split_video(path_video, duration_per_video = 20):# Độ dài (số giây) c
 
     print("Tách video thành các video nhỏ thành công.")
 
+def convert(path, new_path) :
+    video_capture = cv2.VideoCapture(path)
+    fps = video_capture.get(cv2.CAP_PROP_FPS)
+    frame_width = int(video_capture.get(cv2.CAP_PROP_FRAME_WIDTH))
+    frame_height = int(video_capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Định dạng video mới là MP4
+    video_writer = cv2.VideoWriter(new_path, fourcc, fps, (frame_width, frame_height))
+    
+    while True:
+        ret, frame = video_capture.read()
+        if not ret:
+            break  # Hết video, thoát khỏi vòng lặp
+
+        # Xử lý khung hình ở đây nếu muốn
+
+        # Ghi khung hình vào video mới
+        video_writer.write(frame)
+
+    # Giải phóng các đối tượng
+    video_capture.release()
+    video_writer.release()
+    cv2.destroyAllWindows()
+
+def convert_avi2mp4(opt):
+    dir_folder = opt.dir_folder
+    dir_folder = os.path.join(dir_folder, "videos", "video_split")
+    file_list = list(glob.glob(f"{dir_folder}/*"))
+    for file in file_list :
+        new_file = str(file).replace('.avi', '.mp4') 
+        print(new_file)
+        convert(file, new_file)
+        os.remove(file)
 def get_opt():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--dir_folder", type= str, default= "trash")
     parser.add_argument('--path_video', type=str, default= 'trash/video.mp4')
     parser.add_argument('--duration_per_video', type= int, default= 20)
     opt = parser.parse_args()
@@ -65,4 +99,5 @@ if __name__ == "__main__":
 
     opt = get_opt()
     print('\n'.join(map(str,(str(opt).split('(')[1].split(',')))))
-    split_video(opt.path_video, opt.duration_per_video)
+    # split_video(opt.path_video, opt.duration_per_video)
+    convert_avi2mp4(opt)
