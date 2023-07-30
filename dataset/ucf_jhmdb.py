@@ -65,7 +65,7 @@ class UCF_JHMDB_Dataset(Dataset):
         image_path = self.file_names[index].rstrip()
 
         
-        img_split = image_path.split('/')  # ex. ['labels', 'Basketball', 'v_Basketball_g08_c01', '00070.txt']
+        img_split = image_path.split('/')  # ex. ['labels', 'Walking', 'Walking_0000-00001', '00070.txt']
         # image name
 
         img_id = int(img_split[-1][:5])

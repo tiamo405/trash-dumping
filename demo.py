@@ -111,7 +111,7 @@ def multi_hot_vis(args, frame, out_bboxes, orig_w, orig_h, class_names, act_pose
 @torch.no_grad()
 def detect(args, model, device, transform, class_names, class_colors):
     # path to save 
-    save_path = args.outputs
+    save_path = args.save_path
     os.makedirs(save_path, exist_ok=True)
 
     # path to video
@@ -184,7 +184,7 @@ def detect(args, model, device, transform, class_names, class_colors):
                 scores = batch_scores[0]
                 labels = batch_labels[0]
                 bboxes = batch_bboxes[0]
-                print(outputs)
+                # print(outputs)
                 # rescale
                 bboxes = rescale_bboxes(bboxes, [orig_w, orig_h])
                 # one hot
@@ -200,7 +200,7 @@ def detect(args, model, device, transform, class_names, class_colors):
             # save
             frame_resized = cv2.resize(frame, save_size)
             out.write(frame_resized)
-
+            cv2.imwrite('debug.jpg', frame_resized)
             if args.gif:
                 gif_resized = cv2.resize(frame, (200, 150))
                 gif_resized_rgb = gif_resized[..., (2, 1, 0)]
@@ -245,10 +245,11 @@ if __name__ == '__main__':
     num_classes = d_cfg['valid_num_classes']
     # num_classes = 24
 
-    class_colors = [(np.random.randint(255),
-                     np.random.randint(255),
-                     np.random.randint(255)) for _ in range(num_classes)]
-
+    # class_colors = [(np.random.randint(255),
+    #                  np.random.randint(255),
+    #                  np.random.randint(255)) for _ in range(num_classes)]
+    class_colors = {"trashDumping": [0,0,255],
+                    "Walking": [0,255,0]}
     # transform
     basetransform = BaseTransform(img_size=args.img_size)
 

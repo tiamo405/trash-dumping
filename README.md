@@ -106,7 +106,8 @@ or you can just run the script:
 ```Shell
 sh train_trash.sh
 ```
-
+## Colab
+[Colab](https://colab.research.google.com/drive/1abaTdeMouBHtFyHZn5jOgSdipipbVdft?usp=sharing)
 ## Demo
 ```Shell
 # run demo
@@ -123,6 +124,8 @@ or you can just run the script:
 ```Shell
 bash demo_trash.sh
 ```
+
+
 ## Note
 ```
 Author  : Tran Phuong Nam
