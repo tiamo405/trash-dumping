@@ -37,7 +37,7 @@ def crop_video_to_image(path_video, folder_save, label, model_detect_person, mod
     cap_out = cv2.VideoWriter(video_out_path, cv2.VideoWriter_fourcc(*'MJPG'), cap.get(cv2.CAP_PROP_FPS),
                           (frame_width, frame_height))
     font = cv2.FONT_HERSHEY_DUPLEX
-    colors = [(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)) for j in range(20)]
+    colors = [(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)) for _ in range(20)]
     results = None
     while(cap.isOpened()) :
         ret, frame = cap.read()
@@ -86,12 +86,15 @@ def crop_video_to_image(path_video, folder_save, label, model_detect_person, mod
                 if label == 'trashDumping' :
                     write_txt(noidung= '1 {} {} {} {}'.format(left, top, right, bottom),\
                             path= os.path.join(path_save_labels_id, str(id_frame).zfill(5) + '.txt'))
-                else :
+                elif label == 'Walking' :
                     write_txt(noidung= '2 {} {} {} {}'.format(left, top, right, bottom),\
                             path= os.path.join(path_save_labels_id, str(id_frame).zfill(5) + '.txt'))
-                
+                else :
+                    write_txt(noidung= '0 {} {} {} {}'.format(left, top, right, bottom),\
+                            path= os.path.join(path_save_labels_id, str(id_frame).zfill(5) + '.txt'))
                 # ve de kiem tra detect cua video
-                cv2.putText(frame, 'frame: '+ str(id_frame), (30, 30), font, 1.0, (0,255,0), 1)
+
+                cv2.putText(frame, 'frame: '+ str(id_frame), (int(left), int(top-10)), font, 1.0, (0,255,0), 1)
                 cv2.putText(frame, str(track_id), (int(left) - 6, int(top) + 30), font, 1.0, (colors[track_id % len(colors)]), 1)
                 cv2.rectangle(frame, (int(left), int(top)), (int(right), int(bottom)), (colors[track_id % len(colors)]), 3)
 

@@ -44,7 +44,15 @@ class Preprocessing :
                             label               = self.label,
                             model_detect_person = self.model_detect_person,\
                             model_open_pose     = self.model_open_pose)
-            
+
+    def crop_one_video(self, path_video = ""):
+
+        crop_video_to_image(path_video         = path_video,\
+                            folder_save           = self.dir_save, \
+                            label               = self.label,
+                            model_detect_person = self.model_detect_person,\
+                            model_open_pose     = self.model_open_pose)
+
 def get_opt():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dir_data', type=str, default= 'trash')
@@ -58,7 +66,8 @@ if __name__ == "__main__":
     opt = get_opt()
     print('\n'.join(map(str,(str(opt).split('(')[1].split(',')))))
     prepro = Preprocessing(opt)
-    prepro.crop_video()
+    # prepro.crop_video()
+    prepro.crop_one_video(path_video="trash/videos/video_split/video1_00087.mp4")
 
     
         
