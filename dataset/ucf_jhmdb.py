@@ -100,15 +100,20 @@ class UCF_JHMDB_Dataset(Dataset):
                 img_id_temp = 1
             elif img_id_temp > max_num:
                 img_id_temp = max_num
-
+            # img_id_temp se tao ra 1 chuoi anh lien tiep bat dau tu frame x den frame img_id
+            # neu img_id k ton tai dung lien tiep cac frame img_id (video toan cac hinh giong nhau)
             # load a frame
             if self.dataset == 'ucf24':
                 path_tmp = os.path.join(self.data_root, 'rgb-images', img_split[1], img_split[2] ,'{:05d}.jpg'.format(img_id_temp))
             elif self.dataset == 'trash':
-                path_tmp = os.path.join(self.data_root, 'rgb-images', img_split[1], img_split[2] ,'{:05d}.jpg'.format(img_id))
+                path_tmp = os.path.join(self.data_root, 'rgb-images', img_split[1], img_split[2] ,'{:05d}.jpg'.format(img_id_temp))
+                path_tmp_fail = os.path.join(self.data_root, 'rgb-images', img_split[1], img_split[2] ,'{:05d}.jpg'.format(img_id))
             elif self.dataset == 'jhmdb21':
                 path_tmp = os.path.join(self.data_root, 'rgb-images', img_split[1], img_split[2] ,'{:05d}.png'.format(img_id_temp))
-            frame = Image.open(path_tmp).convert('RGB')
+            try:
+                frame = Image.open(path_tmp).convert('RGB')
+            except :
+                frame = Image.open(path_tmp_fail).convert('RGB')
             ow, oh = frame.width, frame.height
 
             video_clip.append(frame)

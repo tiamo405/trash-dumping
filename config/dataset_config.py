@@ -53,14 +53,18 @@ dataset_config = {
         'warmup_factor': 0.00066667,
         'wp_iter': 500,
         # class names
-        'valid_num_classes': 24,
+        # 'valid_num_classes': 24,
+        # 'label_map': (
+        #             'Basketball',     'BasketballDunk',    'Biking',            'CliffDiving',
+        #             'CricketBowling', 'Diving',            'Fencing',           'FloorGymnastics', 
+        #             'GolfSwing',      'HorseRiding',       'IceDancing',        'LongJump',
+        #             'PoleVault',      'RopeClimbing',      'SalsaSpin',         'SkateBoarding',
+        #             'Skiing',         'Skijet',            'SoccerJuggling',    'Surfing',
+        #             'TennisSwing',    'TrampolineJumping', 'VolleyballSpiking', 'WalkingWithDog'
+        #         ),
+        'valid_num_classes': 2,
         'label_map': (
-                    'Basketball',     'BasketballDunk',    'Biking',            'CliffDiving',
-                    'CricketBowling', 'Diving',            'Fencing',           'FloorGymnastics', 
-                    'GolfSwing',      'HorseRiding',       'IceDancing',        'LongJump',
-                    'PoleVault',      'RopeClimbing',      'SalsaSpin',         'SkateBoarding',
-                    'Skiing',         'Skijet',            'SoccerJuggling',    'Surfing',
-                    'TennisSwing',    'TrampolineJumping', 'VolleyballSpiking', 'WalkingWithDog'
+                    'Basketball',     'BasketballDunk'
                 ),
     },
     

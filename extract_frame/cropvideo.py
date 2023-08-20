@@ -45,6 +45,7 @@ def crop_video_to_image(path_video, folder_save, label, model_detect_person, mod
             break
         frame = cv2.resize(frame, (frame_width, frame_height))
         results = model_detect_person(frame)
+        frame_copy = copy.deepcopy(frame)
         # person_locations = point_object(results)
         for result in results:
             detections = []
@@ -76,12 +77,11 @@ def crop_video_to_image(path_video, folder_save, label, model_detect_person, mod
                 path_save_labels_id = os.path.join(path_save_txt, name_video + '-'+ (str(track_id).zfill(5)))
 
                 os.makedirs(path_save_img_id, exist_ok= True)
-
                 os.makedirs(path_save_labels_id, exist_ok= True)
                 
 
                 id_frame = len(os.listdir(path_save_img_id))
-                cv2.imwrite(os.path.join(path_save_img_id, str(id_frame).zfill(5) + '.jpg'), frame)
+                cv2.imwrite(os.path.join(path_save_img_id, str(id_frame).zfill(5) + '.jpg'), frame_copy)
                 # print(f'save image: name video: {name_video}, id:{track_id}, id_frame:{id_frame}')
                 if label == 'trashDumping' :
                     write_txt(noidung= '1 {} {} {} {}'.format(left, top, right, bottom),\
@@ -95,7 +95,7 @@ def crop_video_to_image(path_video, folder_save, label, model_detect_person, mod
                 # ve de kiem tra detect cua video
 
                 cv2.putText(frame, 'frame: '+ str(id_frame), (int(left), int(top-10)), font, 1.0, (0,255,0), 1)
-                cv2.putText(frame, str(track_id), (int(left) - 6, int(top) + 30), font, 1.0, (colors[track_id % len(colors)]), 1)
+                cv2.putText(frame, 'id:' + str(track_id), (int(left) + 6, int(top) + 30), font, 1.0, (colors[track_id % len(colors)]), 1)
                 cv2.rectangle(frame, (int(left), int(top)), (int(right), int(bottom)), (colors[track_id % len(colors)]), 3)
 
         # cv2.imshow("Image", frame)

@@ -20,7 +20,7 @@ from utils.solver.warmup_schedule import build_warmup
 
 from config import build_dataset_config, build_model_config
 from models import build_model
-
+from utils.args import save_args, read_args
 
 GLOBAL_SEED = 42
 
@@ -141,6 +141,11 @@ def train():
     path_to_save = os.path.join(args.save_folder, args.dataset, args.version, today)
     os.makedirs(path_to_save, exist_ok=True)
 
+    # save args
+    save_args(args= args, path_save= path_to_save)
+
+    # read args
+    args = read_args(path= os.path.join(path_to_save, 'args.json'))
     # cuda
     if args.cuda:
         print('use cuda')
@@ -172,7 +177,7 @@ def train():
         trainable=True,
         resume=args.resume
         )
-    print(model)
+    # print(model)
     print("--------------------------\n--------------------------")
     model = model.to(device).train()
 

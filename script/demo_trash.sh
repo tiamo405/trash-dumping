@@ -11,13 +11,12 @@
                 
 CUDA_VISIBLE_DEVICES=0 python demo.py -v yowo_v2_medium \
                 --dataset trash \
-                --num_classes 2 \
                 --len_clip 16 \
                 -size 224 \
-                --weight checkpoints/trash/yowo_v2_medium/2023-07-17/yowo_v2_medium_epoch_6.pth \
+                --weight checkpoints/trash/yowo_v2_tiny/2023-08-20/yowo_v2_tiny_epoch_6.pth \
                 --vis_thresh 0.9 \
                 --dataset trash \
                 --save_path outputs \
-                --video trash/videos/trashDumping/VID_20230310_163652.avi \
+                --video video_test/walking_test.mp4 \
                 # -video trash/videos/Walking/Walking_0014.mp4 \--gif \                
 

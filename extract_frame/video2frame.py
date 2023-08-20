@@ -66,8 +66,8 @@ if __name__ == "__main__":
     opt = get_opt()
     print('\n'.join(map(str,(str(opt).split('(')[1].split(',')))))
     prepro = Preprocessing(opt)
-    # prepro.crop_video()
-    prepro.crop_one_video(path_video="trash/videos/video_split/video1_00087.mp4")
+    prepro.crop_video()
+    # prepro.crop_one_video(path_video="trash/videos/video_split/video1_00087.mp4")
 
     
         
