@@ -2,7 +2,6 @@ CUDA_VISIBLE_DEVICES=0 python train.py \
         --dataset trash \
         --version yowo_v2_tiny \
         --root . \
-        --num_classes 2 \
         --num_workers 2 \
         --eval_epoch 5 \
         --max_epoch 50 \
@@ -20,7 +19,6 @@ CUDA_VISIBLE_DEVICES=0 python train.py \
 #         -d trash \
 #         -v yowo_v2_tiny \
 #         --root . \
-#         --num_classes 2 \
 #         --num_workers 2 \
 #         --eval_epoch 5 \
 #         --max_epoch 50 \

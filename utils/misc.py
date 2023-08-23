@@ -42,8 +42,7 @@ def build_dataset(d_cfg, args, is_train=False):
             len_clip=args.len_clip,
             sampling_rate=d_cfg['sampling_rate']
             )
-        # num_classes = dataset.num_classes
-        num_classes = args.num_classes
+        num_classes = dataset.num_classes
 
         # evaluator
         evaluator = UCF_JHMDB_Evaluator(

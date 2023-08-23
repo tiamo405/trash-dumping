@@ -24,7 +24,7 @@ def remove_folder(folder_1, folder_2):
 
 dir_raw = "trash/data_raw"
 dir_clear = "trash"
-labels = ["Walking", "trashDumping"]
+labels = ["trashDumping"]
 name_folder_raw = "video_split"
 
 def clear_data():
@@ -37,6 +37,7 @@ def clear_data():
             name_folder = os.path.basename(folder)
             rgb_folder = os.path.join(dir_clear, "rgb-images", 
                                       name_folder_raw, name_folder)
+            print("name folder: ", name_folder)
             
             edit_txt(path= folder, label= label)
             remove_folder(folder_1= folder, folder_2= folder_move_label)

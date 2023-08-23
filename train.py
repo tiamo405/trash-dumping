@@ -86,6 +86,8 @@ def parse_args():
                         help="freeze 3d backbone.")
     parser.add_argument('-m', '--memory', action="store_true", default=False,
                         help="memory propagate.")
+    # parser.add_argument('--args_file', type= str, action="store_true", default='args.json', 
+    #                     help="file args config")
 
     # Dataset
     parser.add_argument('-d', '--dataset', default='ucf24',
@@ -94,7 +96,6 @@ def parse_args():
                         help='data root')
     parser.add_argument('--num_workers', default=4, type=int, 
                         help='Number of workers used in dataloading')
-    parser.add_argument('--num_classes', default=2, type= int)
 
     # Matcher
     parser.add_argument('--center_sampling_radius', default=2.5, type=float, 
@@ -145,7 +146,9 @@ def train():
     save_args(args= args, path_save= path_to_save)
 
     # read args
+    # if args.args :
     args = read_args(path= os.path.join(path_to_save, 'args.json'))
+    
     # cuda
     if args.cuda:
         print('use cuda')
@@ -160,7 +163,6 @@ def train():
 
     # dataset and evaluator
     dataset, evaluator ,num_classes= build_dataset(d_cfg, args, is_train=True)
-    #   = args.num_classes
     print("num_classes.. : ", num_classes)
     print("----------------------------------------------------------")
     # dataloader

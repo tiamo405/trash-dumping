@@ -27,7 +27,10 @@ def build_split_list(raw_path, mode):
     print('{} analysis done'.format(raw_path))
 
 def create_txt(raw_data, label, arr_videos, mode) :
-    with open('{}/{}list.txt'.format(raw_data ,mode), 'a') as fout:
+    file_txt = '{}/{}list.txt'.format(raw_data ,mode)
+    if os.path.exists(file_txt):
+        os.remove(file_txt)
+    with open(file_txt, 'w') as fout:
         for video in arr_videos :
             file_list = os.listdir(os.path.join(raw_data, 'labels', label, video))
             file_list.sort()
@@ -37,7 +40,8 @@ def create_txt(raw_data, label, arr_videos, mode) :
     fout.close()
 
 def build_split_data(raw_data) :
-    labels = os.listdir(os.path.join(raw_data, 'labels')) # lay cac label
+    # labels = os.listdir(os.path.join(raw_data, 'labels')) # lay cac label
+    labels = ["Walking", "trashDumping"]
     for label in labels :
 
         fvideos = os.listdir(os.path.join(raw_data, 'labels', label))
@@ -52,26 +56,26 @@ def build_split_data(raw_data) :
     print('{} analysis done'.format(raw_data))
 
 
-def remove_images(raw_data):
-    labels = os.listdir(os.path.join(raw_data, 'labels'))
-    print(labels)
-    for label in labels :
-        print('Start remove label: ', label)
-        dir_images = os.path.join(raw_data, 'rgb-images', label)
-        dir_labels = os.path.join(raw_data, 'labels', label)
+# def remove_images(raw_data):
+#     labels = os.listdir(os.path.join(raw_data, 'labels'))
+#     print(labels)
+#     for label in labels :
+#         print('Start remove label: ', label)
+#         dir_images = os.path.join(raw_data, 'rgb-images', label)
+#         dir_labels = os.path.join(raw_data, 'labels', label)
         
-        folder_images = sorted(list(glob.glob(f"{dir_images}/*")))
-        folder_labels = sorted(list(glob.glob(f"{dir_labels}/*")))
-        # print(folder_images)
-        for folder_label, folder_image in zip(folder_labels, folder_images):
-            print('start remove folder: ', folder_image)
-            file_txts = list(glob.glob(f"{folder_label}/*"))
-            file_images = list(glob.glob(f"{folder_image}/*"))
-            for file in file_images :
-                path_file = file.replace('rgb-images','labels')
-                path_file = path_file.replace('.jpg','.txt')
-                if path_file not in file_txts :
-                    os.remove(file)
+#         folder_images = sorted(list(glob.glob(f"{dir_images}/*")))
+#         folder_labels = sorted(list(glob.glob(f"{dir_labels}/*")))
+#         # print(folder_images)
+#         for folder_label, folder_image in zip(folder_labels, folder_images):
+#             print('start remove folder: ', folder_image)
+#             file_txts = list(glob.glob(f"{folder_label}/*"))
+#             file_images = list(glob.glob(f"{folder_image}/*"))
+#             for file in file_images :
+#                 path_file = file.replace('rgb-images','labels')
+#                 path_file = path_file.replace('.jpg','.txt')
+#                 if path_file not in file_txts :
+#                     os.remove(file)
     
 
 def parse_args():
