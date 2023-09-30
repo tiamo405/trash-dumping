@@ -87,7 +87,8 @@ class UCF_JHMDB_Dataset(Dataset):
 
         # sampling rate
         if self.is_train:
-            d = random.randint(1, 2)
+            # d = random.randint(1, 2)
+            d = self.sampling_rate # do data it nen de 1 thoi
         else:
             d = self.sampling_rate
 
@@ -95,26 +96,37 @@ class UCF_JHMDB_Dataset(Dataset):
         video_clip = []
         for i in reversed(range(self.len_clip)):
             # make it as a loop
-            img_id_temp = img_id - i * d
+            img_id_temp = img_id - i * d # lay data voi cac hinh anh dang truoc
+            # vidu: 70 69 68 67 66 65 ... roi append, co 1 dau hoi la sao lai k dao den luc cuoi
             if img_id_temp < 1:
                 img_id_temp = 1
             elif img_id_temp > max_num:
                 img_id_temp = max_num
+
             # img_id_temp se tao ra 1 chuoi anh lien tiep bat dau tu frame x den frame img_id
             # neu img_id k ton tai dung lien tiep cac frame img_id (video toan cac hinh giong nhau)
             # load a frame
             if self.dataset == 'ucf24':
                 path_tmp = os.path.join(self.data_root, 'rgb-images', img_split[1], img_split[2] ,'{:05d}.jpg'.format(img_id_temp))
+            
             elif self.dataset == 'trash':
                 path_tmp = os.path.join(self.data_root, 'rgb-images', img_split[1], img_split[2] ,'{:05d}.jpg'.format(img_id_temp))
                 path_tmp_fail = os.path.join(self.data_root, 'rgb-images', img_split[1], img_split[2] ,'{:05d}.jpg'.format(img_id))
+            
             elif self.dataset == 'jhmdb21':
                 path_tmp = os.path.join(self.data_root, 'rgb-images', img_split[1], img_split[2] ,'{:05d}.png'.format(img_id_temp))
+            
+            # read image
+            frame = Image.open(path_tmp).convert('RGB')
             try:
                 frame = Image.open(path_tmp).convert('RGB')
             except :
                 frame = Image.open(path_tmp_fail).convert('RGB')
             ow, oh = frame.width, frame.height
+
+            # Neu id frame k ton tai thi frame mau den
+            # if img_id_temp < 1 or img_id_temp > max_num:
+            #     frame = Image.new('RGB', (ow, oh), (0, 0, 0))
 
             video_clip.append(frame)
 

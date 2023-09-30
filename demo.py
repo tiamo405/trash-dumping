@@ -125,7 +125,7 @@ def detect(args, model, device, transform, class_names, class_colors):
 
     save_size = (width, height)
     save_name = os.path.join(save_path, args.video.split('/')[-1].split('.')[0]+ '.avi')
-    fps = 20.0
+    fps = 10.0
     out = cv2.VideoWriter(save_name, fourcc, fps, save_size)
 
     # run
@@ -144,6 +144,8 @@ def detect(args, model, device, transform, class_names, class_colors):
             # prepare
             if len(video_clip) <= 0:
                 for _ in range(args.len_clip):
+                    # test them cac anh ban dau mau den het
+                    frame_pil = Image.new('RGB', (width, height), (0, 0, 0))
                     video_clip.append(frame_pil)
 
             video_clip.append(frame_pil)
@@ -243,7 +245,7 @@ if __name__ == '__main__':
 
     class_names = d_cfg['label_map']
     num_classes = d_cfg['valid_num_classes']
-    # num_classes = 24
+
 
     # class_colors = [(np.random.randint(255),
     #                  np.random.randint(255),

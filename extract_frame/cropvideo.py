@@ -80,7 +80,7 @@ def crop_video_to_image(path_video, folder_save, label, model_detect_person, mod
                 os.makedirs(path_save_labels_id, exist_ok= True)
                 
 
-                id_frame = len(os.listdir(path_save_img_id))
+                id_frame = len(os.listdir(path_save_img_id))+1
                 cv2.imwrite(os.path.join(path_save_img_id, str(id_frame).zfill(5) + '.jpg'), frame_copy)
                 # print(f'save image: name video: {name_video}, id:{track_id}, id_frame:{id_frame}')
                 if label == 'trashDumping' :

@@ -1,6 +1,6 @@
 CUDA_VISIBLE_DEVICES=0 python train.py \
         --dataset trash \
-        --version yowo_v2_tiny \
+        --version yowo_v2_medium \
         --root . \
         --num_workers 2 \
         --eval_epoch 5 \
@@ -10,7 +10,7 @@ CUDA_VISIBLE_DEVICES=0 python train.py \
         -ldr 0.5 \
         --batch_size 8 \
         -accu 16 \
-        --len_clip 16 \
+        --len_clip 8 \
         --cuda
 
 

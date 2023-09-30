@@ -52,7 +52,7 @@ def convert_tensor_to_cv2img(img_tensor):
     return cv2_img
 
 
-def plot_bbox_labels(img, bbox, label=None, cls_color=None, text_scale=0.2):
+def plot_bbox_labels(img, bbox, label=None, cls_color=None, text_scale=0.3):
     x1, y1, x2, y2 = bbox
     x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
     t_size = cv2.getTextSize(label, 0, fontScale=1, thickness=2)[0]
@@ -63,7 +63,7 @@ def plot_bbox_labels(img, bbox, label=None, cls_color=None, text_scale=0.2):
         # plot title bbox
         # cv2.rectangle(img, (x1, y1-t_size[1]), (int(x1 + t_size[0] * text_scale), y1), cls_color, -1)
         # put the test on the title bbox
-        cv2.putText(img, label, (int(x1), int(y1 + 20)), 0, text_scale, (0, 0, 0))
+        cv2.putText(img, label, (int(x1), int(y1 + 20)), 0, text_scale, cls_color)
 
     return img
 
