@@ -97,7 +97,7 @@ class UCF_JHMDB_Dataset(Dataset):
         for i in reversed(range(self.len_clip)):
             # make it as a loop
             img_id_temp = img_id - i * d # lay data voi cac hinh anh dang truoc
-            # vidu: 70 69 68 67 66 65 ... roi append, co 1 dau hoi la sao lai k dao den luc cuoi
+            
             if img_id_temp < 1:
                 img_id_temp = 1
             elif img_id_temp > max_num:
@@ -142,7 +142,8 @@ class UCF_JHMDB_Dataset(Dataset):
         label = target[..., :1]
         boxes = target[..., 1:]
         target = np.concatenate([boxes, label], axis=-1).reshape(-1, 5)
-            
+        
+
         # transform
         video_clip, target = self.transform(video_clip, target)
         # List [T, 3, H, W] -> [3, T, H, W]
