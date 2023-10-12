@@ -1,4 +1,4 @@
-checkpoints=checkpoints/trash/yowo_v2_medium/2023-09-24/yowo_v2_medium_epoch_6.pth
+checkpoints=checkpoints/trash/yowo_v2_medium/2023-10-01/yowo_v2_medium_epoch_50.pth
 video_test=test_model/video_test/xarac3.mp4
 # python demo.py --cuda \
 #                 -v yowo_v2_medium \

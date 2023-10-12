@@ -138,16 +138,16 @@ def detect(args, model, device, transform, class_names, class_colors):
             # to RGB
             frame_rgb = frame[..., (2, 1, 0)]
 
-            # to PIL image
-            frame_pil = Image.fromarray(frame_rgb.astype(np.uint8))
-
+        
             # prepare
             if len(video_clip) <= 0:
                 for _ in range(args.len_clip):
                     # test them cac anh ban dau mau den het
                     frame_pil = Image.new('RGB', (width, height), (0, 0, 0))
                     video_clip.append(frame_pil)
-
+            
+            # to PIL image
+            frame_pil = Image.fromarray(frame_rgb.astype(np.uint8))
             video_clip.append(frame_pil)
             del video_clip[0]
 
