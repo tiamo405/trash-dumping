@@ -94,10 +94,11 @@ class UCF_JHMDB_Dataset(Dataset):
 
         # load images
         video_clip = []
-        for i in reversed(range(self.len_clip)):
+        for i in reversed(range(self.len_clip)): # đảo ngược nên lấy từ len_clip -> 0
+            # như vậy khi .append thì sẽ vẫn từ nhỏ đến lớn
             # make it as a loop
             img_id_temp = img_id - i * d # lay data voi cac hinh anh dang truoc
-            
+            # mỗi khi xét 1 ảnh thì sẽ lấy các ảnh trước đó, vậy trong 1 video có cả 2 động tác thì nên để kết thúc cỉa cái này và bắt đầu của các kia để xa xa về số frame
             if img_id_temp < 1:
                 img_id_temp = 1
             elif img_id_temp > max_num:
@@ -286,7 +287,7 @@ if __name__ == '__main__':
     import cv2
     from transforms import Augmentation, BaseTransform
 
-    data_root = 'D:/python_work/spatial-temporal_action_detection/dataset/ucf24'
+    data_root = '/mnt/nvme0n1/phuongnam/Trash-Dumping/ucf24'
     dataset = 'ucf24'
     is_train = True
     img_size = 224
@@ -297,6 +298,7 @@ if __name__ == '__main__':
         'saturation': 1.5,
         'exposure': 1.5
     }
+    
     train_transform = Augmentation(
         img_size=img_size,
         jitter=trans_config['jitter'],
@@ -316,8 +318,8 @@ if __name__ == '__main__':
     )
 
     print(len(train_dataset))
-    std = trans_config['pixel_std']
-    mean = trans_config['pixel_mean']
+    # std = trans_config['pixel_std']
+    # mean = trans_config['pixel_mean']
     for i in range(len(train_dataset)):
         frame_id, video_clip, target = train_dataset[i]
         key_frame = video_clip[:, -1, :, :]
@@ -341,8 +343,8 @@ if __name__ == '__main__':
             x2 = int(x2 * W)
             y2 = int(y2 * H)
             key_frame = cv2.rectangle(key_frame, (x1, y1), (x2, y2), (255, 0, 0))
-
+            print('frame')
         # cv2 show
-        cv2.imshow('key frame', key_frame)
-        cv2.waitKey(0)
+        # cv2.imshow('key frame', key_frame)
+        # cv2.waitKey(0)
         
