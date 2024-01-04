@@ -18,9 +18,10 @@ weights/
 *.pyc
 *.avi
 *.jpg
-
+*.mp4
+*.txt
 *.zip
-github.sh
+
 __pycache__
 det_results
 .vscode

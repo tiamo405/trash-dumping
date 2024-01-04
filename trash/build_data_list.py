@@ -33,8 +33,9 @@ def create_txt(raw_data, label, arr_videos, file_txt) :
             file_list = os.listdir(os.path.join(raw_data, 'labels', label, video))
             file_list.sort()
             for file in file_list :
-                path = os.path.join('labels', label, video, file)
-                fout.write(path + '\n')
+                if int(file.split('.')[0]) >= 8 and int(file.split('.')[0]) < 300:
+                    path = os.path.join('labels', label, video, file)
+                    fout.write(path + '\n')
     fout.close()
 
 def build_split_data(raw_data) :
@@ -51,7 +52,7 @@ def build_split_data(raw_data) :
 
         fvideos = os.listdir(os.path.join(raw_data, 'labels', label))
         N = len(fvideos)
-        n_train = int(N * 0.8)
+        n_train = int(N * 0.9)
 
         # np.random.shuffle(fvideos)
 

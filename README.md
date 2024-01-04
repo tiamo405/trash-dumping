@@ -47,18 +47,18 @@ trash   __videos        __ Walking        __video1.mp4
         |                               |          |__ frame22.txt
         |                               |          |__ .....
         |                               |__ .....    
-        |__rgb-images    __ Walking     __video1   __ frame11.txt
-        |               |               |         |__ frame12.txt
+        |__rgb-images    __ Walking     __video1   __ frame1.jpg
+        |               |               |         |__ frame2.jpg
         |               |               |         |__ .....        
-        |               |               |__video2   __ frame11.txt
-        |               |               |          |__ frame12.txt
+        |               |               |__video2   __ frame1.jpg
+        |               |               |          |__ frame2.jpg
         |               |               |          |__ .....
         |               |               |__ .....
-        |               |__ trashDumping __video1  __ frame21.txt
-        |                                |         |__ frame22.txt
+        |               |__ trashDumping __video1  __ frame1.jpg
+        |                                |         |__ frame2.jpg
         |                                |         |__ .....        
-        |                                |__video2   __ frame21.txt
-        |                                |          |__ frame22.txt
+        |                                |__video2   __ frame1.jpg
+        |                                |          |__ frame2.jpg
         |                                |          |__ .....
         |                                |__ .....    
         |__testlist.txt

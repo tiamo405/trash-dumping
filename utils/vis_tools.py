@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-
+import os
 
 def vis_targets(video_clips, targets):
     """
@@ -67,21 +67,33 @@ def plot_bbox_labels(img, bbox, label=None, cls_color=None, text_scale=0.3):
 
     return img
 
-def vis_detection(frame, scores, labels, bboxes, vis_thresh, class_names, class_colors):
+def vis_detection(frame, scores, labels, bboxes, vis_thresh, class_names, class_colors, name_video, num_frame):
     ts = 1
+    os.makedirs(os.path.join('test_model/outputs', name_video), exist_ok= True)
     for i, bbox in enumerate(bboxes):
         if scores[i] > vis_thresh:
             label = int(labels[i])
 
             cls_color = class_colors[class_names[label]]
+
             if len(class_names) > 1:
                 mess = '%s: %.2f' % (class_names[label], scores[i])
+
                 print(mess)
             else:
                 cls_color = [255, 0, 0]
                 mess = None
                 # visualize bbox
             frame = plot_bbox_labels(frame, bbox, mess, cls_color, text_scale=ts)
-        
+
+            if class_names[label] =='trashDumping':
+                os.makedirs(os.path.join('test_model/outputs', name_video, 'trash'), exist_ok= True)
+                cv2.imwrite(os.path.join('test_model/outputs', name_video, 'trash', str(num_frame).zfill(5)+'.jpg'), frame)
+
+    # save all frame
+    frame = cv2.putText(frame, f'frame: {str(num_frame)}', (50,50), 1, 1, (0,255,0))
+    os.makedirs(os.path.join('test_model/outputs', name_video, 'all'), exist_ok= True)
+    cv2.imwrite(os.path.join('test_model/outputs', name_video, 'all', str(num_frame).zfill(5)+'.jpg'), frame)
+
     return frame
         

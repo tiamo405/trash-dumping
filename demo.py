@@ -26,7 +26,7 @@ def parse_args():
                         help='show the visulization results.')
     parser.add_argument('--cuda', action='store_true', default=False, 
                         help='use cuda.')
-    parser.add_argument('--save_path', default='outputs', type=str,
+    parser.add_argument('--save_path', default='test_model/outputs', type=str,
                         help='Dir to save results')
     parser.add_argument('-vs', '--vis_thresh', default=0.3, type=float,
                         help='threshold for visualization')
@@ -115,7 +115,7 @@ def detect(args, model, device, transform, class_names, class_colors):
     os.makedirs(save_path, exist_ok=True)
 
     # path to video
-    path_to_video = os.path.join(args.video)
+    path_to_video = args.video
 
     # video
     video = cv2.VideoCapture(path_to_video)
@@ -125,16 +125,19 @@ def detect(args, model, device, transform, class_names, class_colors):
 
     save_size = (width, height)
     save_name = os.path.join(save_path, args.video.split('/')[-1].split('.')[0]+ '.avi')
-    fps = 10.0
+    fps = 5
     out = cv2.VideoWriter(save_name, fourcc, fps, save_size)
 
     # run
     video_clip = []
     image_list = []
+    num_frame = 0
     while(True):
         ret, frame = video.read()
         
         if ret:
+            # count frame
+            num_frame += 1
             # to RGB
             frame_rgb = frame[..., (2, 1, 0)]
 
@@ -186,7 +189,7 @@ def detect(args, model, device, transform, class_names, class_colors):
                 scores = batch_scores[0]
                 labels = batch_labels[0]
                 bboxes = batch_bboxes[0]
-                # print(outputs)
+                
                 # rescale
                 bboxes = rescale_bboxes(bboxes, [orig_w, orig_h])
                 # one hot
@@ -197,12 +200,14 @@ def detect(args, model, device, transform, class_names, class_colors):
                     bboxes=bboxes,
                     vis_thresh=args.vis_thresh,
                     class_names=class_names,
-                    class_colors=class_colors
+                    class_colors=class_colors,
+                    name_video= path_to_video.split('/')[-1].split('.')[0],
+                    num_frame = num_frame
                     )
             # save
             frame_resized = cv2.resize(frame, save_size)
             out.write(frame_resized)
-            cv2.imwrite('debug.jpg', frame_resized)
+            # cv2.imwrite('debug.jpg', frame_resized)
             if args.gif:
                 gif_resized = cv2.resize(frame, (200, 150))
                 gif_resized_rgb = gif_resized[..., (2, 1, 0)]
@@ -218,7 +223,6 @@ def detect(args, model, device, transform, class_names, class_colors):
 
     video.release()
     out.release()
-    cv2.destroyAllWindows()
 
     # generate GIF
     if args.gif:
@@ -272,7 +276,9 @@ if __name__ == '__main__':
     model = model.to(device).eval()
 
     # run
-    detect(args=args,
+    for video_ in os.listdir('test_model/video_test/danhgia'):
+        args.video = os.path.join('test_model/video_test/danhgia', video_)
+        detect(args=args,
             model=model,
             device=device,
             transform=basetransform,
