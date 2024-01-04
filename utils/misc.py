@@ -14,6 +14,11 @@ from evaluator.ava_evaluator import AVA_Evaluator
 def build_dataset(d_cfg, args, is_train=False):
     """
         d_cfg: dataset config
+        'jitter': 0.2,
+        'hue': 0.1,
+        'saturation': 1.5,
+        'exposure': 1.5,
+        'sampling_rate': 1,
     """
     # transform
     augmentation = Augmentation(

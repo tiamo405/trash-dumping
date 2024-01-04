@@ -25,14 +25,13 @@ class Preprocessing :
     def crop_video(self):
         
         folder_save = self.dir_save
-        folder_videos = os.path.join(self.dir_data, 'videos', self.label)
+        folder_videos = os.path.join(self.dir_data)
 
         os.makedirs(folder_save, exist_ok= True)
         os.makedirs(os.path.join(folder_save, 'rgb-images', self.label), exist_ok= True)
         os.makedirs(os.path.join(folder_save, 'labels', self.label), exist_ok= True)
 
-        name_videos = os.listdir(folder_videos)
-        name_videos = sorted(name_videos)
+        name_videos = sorted(os.listdir(folder_videos))
 
         for name_video in name_videos :
             if find_file(nameFile= name_video, nameFolder= os.path.join(folder_save, 'rgb-images', self.label)) :
@@ -55,10 +54,10 @@ class Preprocessing :
 
 def get_opt():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dir_data', type=str, default= 'trash')
+    parser.add_argument('--dir_data', type=str, default= 'extract_frame/data_raw/New1703')
     parser.add_argument('--label', type=str, default='trashDumping')
     parser.add_argument('--weight_yolo', type= str, default='checkpoints/yolov5nu.pt')
-    parser.add_argument('--dir_save', type= str, default='trash')
+    parser.add_argument('--dir_save', type= str, default='extract_frame')
     opt = parser.parse_args()
     return opt
 if __name__ == "__main__":
