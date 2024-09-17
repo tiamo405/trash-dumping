@@ -1,5 +1,5 @@
-checkpoints=checkpoints/trash/yowo_v2_medium/2023-10-01/yowo_v2_medium_epoch_50.pth
-video_test=test_model/video_test/danhgia/VID_20230317_161005.mp4
+checkpoints=checkpoints/trash/yowo_v2_medium/yowo_v2_medium_epoch_50.pth
+video_test=test_model/video_test/xarac1.mp4
 # python demo.py --cuda \
 #                 -v yowo_v2_medium \
 #                 --num_classes 2 \
@@ -11,7 +11,7 @@ video_test=test_model/video_test/danhgia/VID_20230317_161005.mp4
 #                 # --gif \
 
                 
-CUDA_VISIBLE_DEVICES=1 python demo.py -v yowo_v2_medium \
+python demo.py -v yowo_v2_medium \
                 --cuda \
                 --dataset trash \
                 --len_clip 8 \

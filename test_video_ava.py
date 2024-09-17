@@ -118,7 +118,9 @@ def detect(args, model, device, transform, class_names, class_colors):
     # video
     video = cv2.VideoCapture(path_to_video)
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    save_size = (960, 720)
+    height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+    save_size = (width, height)
     save_name = os.path.join('detection.avi')
     fps = 20.0
     out = cv2.VideoWriter(save_name, fourcc, fps, save_size)
@@ -132,7 +134,6 @@ def detect(args, model, device, transform, class_names, class_colors):
         if ret:
             # to RGB
             frame_rgb = frame[..., (2, 1, 0)]
-            print(frame_rgb.shape)
 
             # to PIL image
             frame_pil = Image.fromarray(frame_rgb.astype(np.uint8))
