@@ -1,6 +1,8 @@
+import os, sys
+root = os.getcwd()
+sys.path.insert(0, root)
 import argparse
 import cv2
-import os
 import time
 import numpy as np
 import torch
@@ -14,6 +16,7 @@ from utils.vis_tools import vis_detection
 from config import build_dataset_config, build_model_config
 from models import build_model
 
+from config import WEIGHT, VIDEO_PATH
 
 
 def parse_args():
@@ -52,7 +55,7 @@ def parse_args():
                         help='NMS threshold')
     parser.add_argument('--topk', default=40, type=int,
                         help='NMS threshold')
-    parser.add_argument('-K', '--len_clip', default=16, type=int,
+    parser.add_argument('-K', '--len_clip', default=32, type=int,
                         help='video clip length.')
     parser.add_argument('-m', '--memory', action="store_true", default=False,
                         help="memory propagate.")
@@ -225,6 +228,8 @@ if __name__ == '__main__':
     np.random.seed(100)
     args = parse_args()
 
+    args.video = VIDEO_PATH
+    args.weight = WEIGHT
     # cuda
     if args.cuda:
         print('use cuda')

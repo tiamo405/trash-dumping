@@ -19,3 +19,25 @@ def build_dataset_config(args):
     d_cfg = dataset_config[args.dataset]
 
     return d_cfg
+
+
+from environs import Env
+import os
+pwd = os.path.dirname(os.path.realpath(__file__))
+from .config import *
+
+env = Env()
+env.read_env()
+
+# minio-config
+ENDPOINT = env.str("ENDPOINT", ENDPOINT)
+ACCESS_KEY = env.str("ACCESS_KEY", ACCESS_KEY)
+SECRET_KEY = env.str("SECRET_KEY", SECRET_KEY)
+BUCKET = env.str("BUCKET", BUCKET)
+SECURE = env.bool("SECURE", SECURE)
+
+# model
+WEIGHT = env.str("WEIGHT", WEIGHT)
+
+# video
+VIDEO_PATH = env.str("VIDEO_PATH", VIDEO_PATH)
