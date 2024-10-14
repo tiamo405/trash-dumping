@@ -15,8 +15,26 @@ class MongoDBManager:
 
     # Thêm tài liệu vào bộ sưu tập tài khoản (insert vào account)
     def insert_account(self, account_data):
-        accounts = self.db['accounts']
+        accounts = self.db['customers']
         result = accounts.insert_one(account_data)
+        return str(result.inserted_id)
+
+    # Thêm role vào bộ sưu tập roles
+    def insert_role(self, role_data):
+        roles = self.db['roles']
+        result = roles.insert_one(role_data)
+        return str(result.inserted_id)
+    
+    # Thêm tài liệu vào bộ sưu tập violation_images (insert vào violation_images)
+    def insert_violation(self, violation_data):
+        violations = self.db['violation_images']
+        result = violations.insert_one(violation_data)
+        return str(result.inserted_id)
+    
+    # Thêm tài liệu vào bộ sưu tập violation_videos (insert vào violation_videos)
+    def insert_violation_video(self, violation_video_data):
+        violation_videos = self.db['violation_videos']
+        result = violation_videos.insert_one(violation_video_data)
         return str(result.inserted_id)
 
     # Tìm camera theo id
@@ -31,8 +49,23 @@ class MongoDBManager:
 
     # Tìm tài khoản theo username
     def get_account_by_username(self, username):
-        accounts = self.db['accounts']
+        accounts = self.db['customers']
         return accounts.find_one({"username": username})
+
+    # Tìm role theo tên role
+    def get_role_by_name(self, role_name):
+        roles = self.db['roles']
+        return roles.find_one({"role_name": role_name})
+    
+    # Tìm violation_image theo id
+    def get_violation_image_by_id(self, violation_id):
+        violations = self.db['violation_images']
+        return violations.find_one({"_id": ObjectId(violation_id)})
+    
+    # Tìm violation_video theo violation_image_id
+    def get_violation_video_by_violation_id(self, violation_image_id):
+        violation_videos = self.db['violation_videos']
+        return violation_videos.find_one({"violation_image_id": violation_image_id})
 
     # Cập nhật camera theo ID
     def update_camera_by_id(self, cam_id, update_data):
@@ -42,11 +75,32 @@ class MongoDBManager:
             {"$set": update_data}
         )
         return result.modified_count
+    
+    # Cập nhật tài khoản theo ID
+    def update_account_by_id(self, account_id, update_data):
+        accounts = self.db['customers']
+        result = accounts.update_one(
+            {"_id": ObjectId(account_id)},
+            {"$set": update_data}
+        )
+        return result.modified_count
 
     # Xóa camera theo ID
     def delete_camera_by_id(self, cam_id):
         cameras = self.db['cameras']
         result = cameras.delete_one({"_id": ObjectId(cam_id)})
+        return result.deleted_count
+    
+    # Xóa tài khoản theo ID
+    def delete_account_by_id(self, account_id):
+        accounts = self.db['customers']
+        result = accounts.delete_one({"_id": ObjectId(account_id)})
+        return result.deleted_count
+    
+    # xoas role theo ID
+    def delete_role_by_id(self, role_id):
+        roles = self.db['roles']
+        result = roles.delete_one({"_id": ObjectId(role_id)})
         return result.deleted_count
 
     # Lấy danh sách tất cả camera
@@ -58,44 +112,57 @@ class MongoDBManager:
     def get_open_cameras(self):
         cameras = self.db['cameras']
         return list(cameras.find({"isOpen": True}))
+    
+    #lay danh sach tat ca tai khoan
+    def get_all_accounts(self):
+        accounts = self.db['customers']
+        return list(accounts.find())
 
-    # Thêm role vào bộ sưu tập roles
-    def insert_role(self, role_data):
-        roles = self.db['roles']
-        result = roles.insert_one(role_data)
-        return str(result.inserted_id)
+    # Lấy danh sách tất cả violation_images theo camera_id, violation_date
+    def get_all_violation_images(self, camera_id, violation_date):
+        violations = self.db['violation_images']
+        return list(violations.find({"camera_id": camera_id, "violation_date": violation_date}))
+    
+    
 
-    # Tìm role theo tên role
-    def get_role_by_name(self, role_name):
-        roles = self.db['roles']
-        return roles.find_one({"role_name": role_name})
+    
 
 # Ví dụ về việc sử dụng class này
 if __name__ == "__main__":
     mongo_manager = MongoDBManager()
 
-    # Thêm camera
-    new_camera = {
-        "rtsp_cam": "rtsp://192.168.1.101:554/stream1",
-        "isOpen": True,
-        "date_added": datetime.utcnow().timestamp(),
-        "location": "Building B - Floor 2"
-    }
-    cam_id = mongo_manager.insert_camera(new_camera)
-    print(f"Inserted camera with ID: {cam_id}")
+    # new_camera = {
+    #     "rtsp_cam": 'test_model/video_test/2.mp4',
+    #     "is_activate": True,
+    #     "date_added": datetime.utcnow().timestamp(),
+    #     "location": "video test",
+    #     "add_by_customer_id": "66f50f9d6a42a68067ae030b",
+    # }
 
-    # Tìm camera theo RTSP URL
-    # found_camera = mongo_manager.get_camera_by_rtsp("rtsp://192.168.1.101:554/stream1")
-    # print(f"Found camera: {found_camera}")
+    # new_role = {
+    #     "role": "ADMIN",
+    #     "role_name": "admin",
+    #     "permissions": ["create", "read", "update", "delete"],
+    #     "date_create": int(datetime.utcnow().timestamp())
+    # }
 
-    # # Cập nhật camera theo ID
-    # update_data = {"isOpen": True}
-    # updated_count = mongo_manager.update_camera_by_id(cam_id, update_data)
-    # print(f"Number of cameras updated: {updated_count}")
+    # new_account = {
+    #     "username": "admin",
+    #     "password": "admin",
+    #     "email": "admin@gmail.com",
+    #     "dob": "01/01/2000",
+    #     "phoneNumber": "0123456789",
+    #     "full_name": "tran nam",
+    #     "date_create": datetime.utcnow().timestamp(),
+    #     "role": str(role_id)
+    # }
 
-    # # # Xóa camera theo ID
-    
-    # deleted_count = mongo_manager.delete_camera_by_id('66f37ceb37af25865bfb6e1e')
-    # print(f"Number of cameras deleted: {deleted_count}")
+    find_camera = mongo_manager.get_camera_by_rtsp('test_model/video_test/2.mp4')
+    # print(find_camera)
+    cam_id = str(find_camera['_id'])
+    # find image violation by id
+    find_violation = mongo_manager.get_violation_image_by_id('66fbe58ca62de5138f5ab05e')
+    # print(find_violation)
 
-
+    find_all_violation = mongo_manager.get_all_violation_images(cam_id, 1727715600)
+    print(len(find_all_violation))

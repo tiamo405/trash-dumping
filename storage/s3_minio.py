@@ -3,6 +3,8 @@ import sys, os
 root = os.getcwd()
 sys.path.insert(0, root)
 
+
+
 from minio import Minio
 from minio.error import S3Error
 from config import ENDPOINT, ACCESS_KEY, SECRET_KEY, SECURE, BUCKET

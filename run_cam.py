@@ -6,7 +6,7 @@ import cv2
 import time
 import numpy as np
 import torch
-import imageio
+import threading
 from PIL import Image
 
 from dataset.transforms import BaseTransform
@@ -18,6 +18,13 @@ from models import build_model
 
 from config import WEIGHT, VIDEO_PATH
 
+from storage.s3_minio import S3Minio
+from storage.mongo import MongoDBManager
+from utils import time_utils
+# khoi tao doi tuong S3Minio
+s3 = S3Minio()
+# khoi tao doi tuong Mongo
+mongo = MongoDBManager()
 
 def parse_args():
     parser = argparse.ArgumentParser(description='YOWOv2 Demo')
@@ -61,7 +68,25 @@ def parse_args():
                         help="memory propagate.")
 
     return parser.parse_args()
-                    
+
+def save_storage(frame):
+    timesteamp = time_utils.get_timestamp()
+    date_timestamp = time_utils.get_date_timestamp()
+    camera = mongo.get_camera_by_rtsp(VIDEO_PATH)
+    camera_id = str(camera['_id'])
+    # save mongo
+    new_detection = {
+        "camera_id": camera_id,
+        "detect_timestamp": timesteamp,
+        "violation_date" : date_timestamp,
+    }
+    violation_image_id = mongo.insert_violation(new_detection)
+    violation_image_id = str(violation_image_id)
+    cv2.imwrite(f'temp_file/{violation_image_id}.jpg', frame)
+    s3.upload_file(f'temp_file/{violation_image_id}.jpg', f'{violation_image_id}.jpg')
+    os.remove(f'temp_file/{violation_image_id}.jpg')
+
+
 
 def multi_hot_vis(args, frame, out_bboxes, orig_w, orig_h, class_names, act_pose=False):
     # visualize detection results
@@ -87,7 +112,7 @@ def multi_hot_vis(args, frame, out_bboxes, orig_w, orig_h, class_names, act_pose
         indices = list(indices[0])
         scores = list(scores)
 
-        if len(scores) > 0:
+        if len(scores) > 0: # co ng 
             # draw bbox
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
             # draw text
@@ -97,7 +122,7 @@ def multi_hot_vis(args, frame, out_bboxes, orig_w, orig_h, class_names, act_pose
             text  = []
             text_size = []
 
-            for _, cls_ind in enumerate(indices):
+            for _, cls_ind in enumerate(indices): # 16: hold an object
                 text.append("[{:.2f}] ".format(scores[_]) + str(class_names[cls_ind]))
                 text_size.append(cv2.getTextSize(text[-1], font, fontScale=0.5, thickness=1)[0])
                 coord.append((x1+3, y1+14+20*_))
@@ -105,7 +130,10 @@ def multi_hot_vis(args, frame, out_bboxes, orig_w, orig_h, class_names, act_pose
             frame = cv2.addWeighted(frame, 1.0, blk, 0.5, 1)
             for t in range(len(text)):
                 cv2.putText(frame, text[t], coord[t], font, 0.5, (0, 0, 0), 1)
-    
+            if 16 in indices: # 16: hold an object
+                save_storage_thread = threading.Thread(target=save_storage, args=(frame,))
+                save_storage_thread.start()
+
     return frame
 
 
@@ -227,7 +255,7 @@ if __name__ == '__main__':
     d_cfg = build_dataset_config(args)
     m_cfg = build_model_config(args)
 
-    class_names = d_cfg['label_map']
+    class_names = d_cfg['label_map'] # 16: hold an object
     num_classes = d_cfg['valid_num_classes']
 
     class_colors = [(np.random.randint(255),
