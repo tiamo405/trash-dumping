@@ -22,6 +22,9 @@ weights/
 *.txt
 *.zip
 
+d.jpg
+deteciion.avi
+
 __pycache__
 det_results
 .vscode
