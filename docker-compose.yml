@@ -22,4 +22,4 @@ services:
       MINIO_ROOT_PASSWORD: minioadmin
     volumes:
       - ./data:/data
-    command: server /data
+    command: server /data --console-address ":9001"

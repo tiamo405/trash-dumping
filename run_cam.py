@@ -208,7 +208,7 @@ def detect(args, model, device, transform, class_names, class_colors):
                     class_names=class_names,
                     act_pose=args.pose
                     )
-            elif args.dataset in ['ucf24']:
+            elif args.dataset in ['ucf24', 'trash']:
                 batch_scores, batch_labels, batch_bboxes = outputs
                 # batch size = 1
                 scores = batch_scores[0]

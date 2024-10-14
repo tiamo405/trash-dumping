@@ -111,7 +111,7 @@ sh train_trash.sh
 ## Demo
 ```Shell
 # run demo
-python demo.py --cuda \
+python run_model_custom.py --cuda \
                 -v yowo_v2_medium \
                 --num_classes 2 \
                 -size 224 \
