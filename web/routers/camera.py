@@ -57,3 +57,19 @@ async def list_cam(page: int = 1, limit: int = 5):
     paginated_data = cameras[start_index:end_index]
     total_pages = (len(cameras) + limit - 1) // limit
     return Response(0, entities={"cameras": paginated_data, "total_pages": total_pages})
+
+@camera_router.post("/start")
+async def start_cam(rtsp_url: str = Form(...)):
+    camera = mongo_manager.get_camera_by_rtsp(rtsp_url)
+    if not camera:
+        return Response(102, error_resp=102)
+    else:
+        if camera['is_activate']:
+            return Response(200, msg="Camera is already activated")
+        else:
+            camera['is_activate'] = True
+            ok = mongo_manager.update_camera(camera)
+            if ok:
+                return Response(200, msg="Camera is activated")
+            else:
+                return Response(500, error_resp=500)
