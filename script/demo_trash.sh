@@ -1,5 +1,5 @@
 checkpoints=checkpoints/trash/yowo_v2_medium/yowo_v2_medium_epoch_50.pth
-video_test=test_model/video_test/xarac1.mp4
+video_test=test_model/video_test/2.mp4
 # python demo.py --cuda \
 #                 -v yowo_v2_medium \
 #                 --num_classes 2 \
@@ -11,8 +11,7 @@ video_test=test_model/video_test/xarac1.mp4
 #                 # --gif \
 
                 
-python demo.py -v yowo_v2_medium \
-                --cuda \
+python run_model_custom.py -v yowo_v2_medium \
                 --dataset trash \
                 --len_clip 8 \
                 --img_size 224 \
