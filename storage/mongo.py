@@ -118,12 +118,24 @@ class MongoDBManager:
         accounts = self.db['customers']
         return list(accounts.find())
 
+    #lay danh sach tat ca violation_images theo camera_id
+    def get_all_violation_images_by_camId(self, camera_id):
+        violations = self.db['violation_images']
+        return list(violations.find({"camera_id": camera_id}))
+    
     # Lấy danh sách tất cả violation_images theo camera_id, violation_date
     def get_all_violation_images(self, camera_id, violation_date):
         violations = self.db['violation_images']
         return list(violations.find({"camera_id": camera_id, "violation_date": violation_date}))
     
-    
+    # update camera
+    def update_camera(self, camera):
+        cameras = self.db['cameras']
+        result = cameras.update_one(
+            {"_id": camera['_id']},
+            {"$set": camera}
+        )
+        return result.modified_count # 1 : ok, 0 : fail
 
     
 
@@ -158,11 +170,13 @@ if __name__ == "__main__":
     # }
 
     find_camera = mongo_manager.get_camera_by_rtsp('test_model/video_test/2.mp4')
-    # print(find_camera)
-    cam_id = str(find_camera['_id'])
+    # find_camera['location'] = 'video test 1 2'
+    # modified = mongo_manager.update_camera(find_camera)
+    # find_camera = mongo_manager.get_camera_by_rtsp('test_model/video_test/2.mp4')
+    camId = str(find_camera['_id'])
     # find image violation by id
-    find_violation = mongo_manager.get_violation_image_by_id('66fbe58ca62de5138f5ab05e')
-    # print(find_violation)
+    find_violation = mongo_manager.get_all_violation_images(camId, 1729530000)
+    print(find_violation)
 
-    find_all_violation = mongo_manager.get_all_violation_images(cam_id, 1727715600)
-    print(len(find_all_violation))
+    # find_all_violation = mongo_manager.get_all_violation_images(cam_id, 1727715600)
+    # print(find_all_violation)
