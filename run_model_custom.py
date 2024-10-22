@@ -1,4 +1,5 @@
 import argparse
+import threading
 import cv2
 import os
 import time
@@ -14,7 +15,20 @@ from utils.vis_tools import vis_detection
 from config import build_dataset_config, build_model_config
 from models import build_model
 
+from config import WEIGHT, VIDEO_PATH, DEBUG
 
+from deep_sort.tracker import Tracker
+
+from storage.s3_minio import S3Minio
+from storage.mongo import MongoDBManager
+from utils import time_utils
+
+# khoi tao doi tuong S3Minio
+s3 = S3Minio()
+# khoi tao doi tuong Mongo
+mongo = MongoDBManager()
+# khoi tao doi tuong Tracker
+tracker = Tracker()
 
 def parse_args():
     parser = argparse.ArgumentParser(description='YOWOv2 Demo')
@@ -28,7 +42,7 @@ def parse_args():
                         help='use cuda.')
     parser.add_argument('--save_path', default='test_model/outputs', type=str,
                         help='Dir to save results')
-    parser.add_argument('-vs', '--vis_thresh', default=0.3, type=float,
+    parser.add_argument('-vs', '--vis_thresh', default=0.8, type=float,
                         help='threshold for visualization')
     parser.add_argument('--video', default='9Y_l9NsnYE0.mp4', type=str,
                         help='AVA video name.')
@@ -36,14 +50,14 @@ def parse_args():
                         help='generate gif.')
 
     # class label config
-    parser.add_argument('-d', '--dataset', default='ava_v2.2',
+    parser.add_argument('-d', '--dataset', default='trash',
                         help='ava_v2.2')
     parser.add_argument('--pose', action='store_true', default=False, 
                         help='show 14 action pose of AVA.')
     parser.add_argument('--num_classes', default=2, type= int)
 
     # model
-    parser.add_argument('-v', '--version', default='yowo_v2_large', type=str,
+    parser.add_argument('-v', '--version', default='yowo_v2_medium', type=str,
                         help='build YOWOv2')
     parser.add_argument('--weight', default=None,
                         type=str, help='Trained state_dict file path to open')
@@ -53,13 +67,14 @@ def parse_args():
                         help='NMS threshold')
     parser.add_argument('--topk', default=40, type=int,
                         help='NMS threshold')
-    parser.add_argument('-K', '--len_clip', default=16, type=int,
+    parser.add_argument('-K', '--len_clip', default=8, type=int,
                         help='video clip length.')
     parser.add_argument('-m', '--memory', action="store_true", default=False,
                         help="memory propagate.")
 
     return parser.parse_args()
-                    
+
+           
 
 def multi_hot_vis(args, frame, out_bboxes, orig_w, orig_h, class_names, act_pose=False):
     # visualize detection results
@@ -107,6 +122,22 @@ def multi_hot_vis(args, frame, out_bboxes, orig_w, orig_h, class_names, act_pose
     
     return frame
 
+def save_storage(frame):
+    timesteamp = time_utils.get_timestamp()
+    date_timestamp = time_utils.get_date_timestamp()
+    camera = mongo.get_camera_by_rtsp(VIDEO_PATH)
+    camera_id = str(camera['_id'])
+    # save mongo
+    new_detection = {
+        "camera_id": camera_id,
+        "detect_timestamp": timesteamp,
+        "violation_date" : date_timestamp,
+    }
+    violation_image_id = mongo.insert_violation(new_detection)
+    violation_image_id = str(violation_image_id)
+    cv2.imwrite(f'temp_file/{violation_image_id}.jpg', frame)
+    s3.upload_file(f'temp_file/{violation_image_id}.jpg', f'{violation_image_id}.jpg')
+    os.remove(f'temp_file/{violation_image_id}.jpg') 
 
 @torch.no_grad()
 def detect(args, model, device, transform, class_names, class_colors):
@@ -119,19 +150,21 @@ def detect(args, model, device, transform, class_names, class_colors):
 
     # video
     video = cv2.VideoCapture(path_to_video)
-    width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    fourcc = cv2.VideoWriter_fourcc(*'XVID')
-
-    save_size = (width, height)
-    save_name = os.path.join(save_path, args.video.split('/')[-1].split('.')[0]+ '.avi')
-    fps = 5
-    out = cv2.VideoWriter(save_name, fourcc, fps, save_size)
+    if DEBUG:
+        width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        save_size = (width, height)
+        save_name = os.path.join(save_path, args.video.split('/')[-1].split('.')[0]+ '.avi')
+        fps = 5
+        out = cv2.VideoWriter(save_name, fourcc, fps, save_size)
 
     # run
     video_clip = []
     image_list = []
     num_frame = 0
+    # Tạo danh sách lưu các ID
+    trash_ids = []
     while(True):
         ret, frame = video.read()
         
@@ -143,12 +176,16 @@ def detect(args, model, device, transform, class_names, class_colors):
 
         
             # prepare
-            if len(video_clip) <= 0:
-                for _ in range(args.len_clip):
-                    # test them cac anh ban dau mau den het
-                    frame_pil = Image.new('RGB', (width, height), (0, 0, 0))
-                    video_clip.append(frame_pil)
+            # if len(video_clip) <= 0:
+            #     for _ in range(args.len_clip):
+            #         # test them cac anh ban dau mau den het
+            #         frame_pil = Image.new('RGB', (width, height), (0, 0, 0))
+            #         video_clip.append(frame_pil)
             
+            if len(video_clip) < args.len_clip: # fix lỗi, khi nào đủ số frame mới cho vào model 
+                frame_pil = Image.fromarray(frame_rgb.astype(np.uint8))
+                video_clip.append(frame_pil)
+                continue
             # to PIL image
             frame_pil = Image.fromarray(frame_rgb.astype(np.uint8))
             video_clip.append(frame_pil)
@@ -193,20 +230,48 @@ def detect(args, model, device, transform, class_names, class_colors):
                 # rescale
                 bboxes = rescale_bboxes(bboxes, [orig_w, orig_h])
                 # one hot
-                frame = vis_detection(
-                    frame=frame,
-                    scores=scores,
-                    labels=labels,
-                    bboxes=bboxes,
-                    vis_thresh=args.vis_thresh,
-                    class_names=class_names,
-                    class_colors=class_colors,
-                    name_video= path_to_video.split('/')[-1].split('.')[0],
-                    num_frame = num_frame
-                    )
+                detections = []
+                for i, bbox in enumerate(bboxes):
+                    if scores[i] > args.vis_thresh:
+                        x1, y1, x2, y2 = bbox
+                        x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
+                        label = int(labels[i])
+                        if label == 0: # chi tinh class trashDumping
+                            score = scores[i]
+                            detections.append([x1, y1, x2, y2, score])
+                if len(detections) > 0:
+                    tracker.update(frame, detections)
+                else:
+                    continue
+                for track in tracker.tracks:
+                    box = track.bbox
+                    left, top, right, bottom = box
+                    track_id = track.track_id
+                    frame = cv2.rectangle(frame, (int(left), int(top)), (int(right), int(bottom)), class_colors["trashDumping"], 2)
+                    frame = cv2.putText(frame, f'id: {str(track_id)}', (int(left), int(top-10)), cv2.FONT_HERSHEY_SIMPLEX, 1.0, class_colors["trashDumping"], 1)
+                    # Kiểm tra xem có ID nào mới không
+                    if track_id not in trash_ids:
+                        # Thêm ID mới vào danh sách
+                        trash_ids.append(track_id)
+                        # Lưu vào MongoDB
+                        save_storage_thread = threading.Thread(target=save_storage, args=(frame,))
+                        save_storage_thread.start()
+                # frame = vis_detection(
+                #     frame=frame,
+                #     scores=scores,
+                #     labels=labels,
+                #     bboxes=bboxes,
+                #     vis_thresh=args.vis_thresh,
+                #     class_names=class_names,
+                #     class_colors=class_colors,
+                #     name_video= path_to_video.split('/')[-1].split('.')[0],
+                #     num_frame = num_frame
+                #     )
+                
             # save
-            frame_resized = cv2.resize(frame, save_size)
-            out.write(frame_resized)
+            # frame_resized = cv2.resize(frame, save_size)
+            if DEBUG:
+                out.write(frame)
             # cv2.imwrite('debug.jpg', frame_resized)
             if args.gif:
                 gif_resized = cv2.resize(frame, (200, 150))
@@ -235,6 +300,8 @@ def detect(args, model, device, transform, class_names, class_colors):
 if __name__ == '__main__':
     np.random.seed(100)
     args = parse_args()
+    args.video = VIDEO_PATH
+    args.weight = WEIGHT
 
     # cuda
     if args.cuda:
@@ -275,12 +342,9 @@ if __name__ == '__main__':
     # to eval
     model = model.to(device).eval()
 
-    # run
-    for video_ in os.listdir('test_model/video_test/danhgia'):
-        args.video = os.path.join('test_model/video_test/danhgia', video_)
-        detect(args=args,
-            model=model,
-            device=device,
-            transform=basetransform,
-            class_names=class_names,
-            class_colors=class_colors)
+    detect(args=args,
+        model=model,
+        device=device,
+        transform=basetransform,
+        class_names=class_names,
+        class_colors=class_colors)
