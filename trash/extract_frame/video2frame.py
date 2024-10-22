@@ -34,8 +34,8 @@ class Preprocessing :
         name_videos = sorted(os.listdir(folder_videos))
 
         for name_video in name_videos :
-            if find_file(nameFile= name_video, nameFolder= os.path.join(folder_save, 'rgb-images', self.label)) :
-                continue
+            # if find_file(nameFile= name_video, nameFolder= os.path.join(folder_save, 'rgb-images', self.label)) :
+            #     continue
             print('path video: ',os.path.join(folder_videos, name_video))
             
             crop_video_to_image(path_video         = os.path.join(folder_videos, name_video),\
@@ -54,10 +54,10 @@ class Preprocessing :
 
 def get_opt():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dir_data', type=str, default= 'extract_frame/data_raw/New1703')
-    parser.add_argument('--label', type=str, default='trashDumping')
+    parser.add_argument('--dir_data', type=str, default= 'trash/New_video')
+    parser.add_argument('--label', type=str, default='None')
     parser.add_argument('--weight_yolo', type= str, default='checkpoints/yolov5nu.pt')
-    parser.add_argument('--dir_save', type= str, default='extract_frame')
+    parser.add_argument('--dir_save', type= str, default='trash/extract_frame')
     opt = parser.parse_args()
     return opt
 if __name__ == "__main__":
@@ -69,4 +69,3 @@ if __name__ == "__main__":
     # prepro.crop_one_video(path_video="trash/videos/video_split/video1_00087.mp4")
 
     
-        

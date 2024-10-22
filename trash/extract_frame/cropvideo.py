@@ -43,7 +43,7 @@ def crop_video_to_image(path_video, folder_save, label, model_detect_person, mod
     results = None
     while(cap.isOpened()) :
         ret, frame = cap.read()
-        frame = cv2.flip(frame, 0)
+        # frame = cv2.flip(frame, 0)
         if frame is None:
             break
         frame = cv2.resize(frame, (frame_width, frame_height))
