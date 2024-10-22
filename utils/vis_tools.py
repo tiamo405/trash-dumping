@@ -1,6 +1,18 @@
+import threading
 import cv2
 import numpy as np
 import os
+
+from config import  VIDEO_PATH, DEBUG
+
+from storage.s3_minio import S3Minio
+from storage.mongo import MongoDBManager
+from utils import time_utils
+# khoi tao doi tuong S3Minio
+s3 = S3Minio()
+# khoi tao doi tuong Mongo
+mongo = MongoDBManager()
+
 
 def vis_targets(video_clips, targets):
     """
@@ -87,13 +99,31 @@ def vis_detection(frame, scores, labels, bboxes, vis_thresh, class_names, class_
             frame = plot_bbox_labels(frame, bbox, mess, cls_color, text_scale=ts)
 
             if class_names[label] =='trashDumping':
-                os.makedirs(os.path.join('test_model/outputs', name_video, 'trash'), exist_ok= True)
-                cv2.imwrite(os.path.join('test_model/outputs', name_video, 'trash', str(num_frame).zfill(5)+'.jpg'), frame)
-
+                save_storage_thread = threading.Thread(target=save_storage, args=(frame,))
+                save_storage_thread.start()
+                if DEBUG:
+                    os.makedirs(os.path.join('test_model/outputs', name_video, 'trash'), exist_ok= True)
+                    cv2.imwrite(os.path.join('test_model/outputs', name_video, 'trash', str(num_frame).zfill(5)+'.jpg'), frame)
     # save all frame
-    frame = cv2.putText(frame, f'frame: {str(num_frame)}', (50,50), 1, 1, (0,255,0))
-    os.makedirs(os.path.join('test_model/outputs', name_video, 'all'), exist_ok= True)
-    cv2.imwrite(os.path.join('test_model/outputs', name_video, 'all', str(num_frame).zfill(5)+'.jpg'), frame)
-
+    if DEBUG:
+        frame = cv2.putText(frame, f'frame: {str(num_frame)}', (50,50), 1, 1, (0,255,0))
+        os.makedirs(os.path.join('test_model/outputs', name_video, 'all'), exist_ok= True)
+        cv2.imwrite(os.path.join('test_model/outputs', name_video, 'all', str(num_frame).zfill(5)+'.jpg'), frame)
     return frame
         
+def save_storage(frame):
+    timesteamp = time_utils.get_timestamp()
+    date_timestamp = time_utils.get_date_timestamp()
+    camera = mongo.get_camera_by_rtsp(VIDEO_PATH)
+    camera_id = str(camera['_id'])
+    # save mongo
+    new_detection = {
+        "camera_id": camera_id,
+        "detect_timestamp": timesteamp,
+        "violation_date" : date_timestamp,
+    }
+    violation_image_id = mongo.insert_violation(new_detection)
+    violation_image_id = str(violation_image_id)
+    cv2.imwrite(f'temp_file/{violation_image_id}.jpg', frame)
+    s3.upload_file(f'temp_file/{violation_image_id}.jpg', f'{violation_image_id}.jpg')
+    os.remove(f'temp_file/{violation_image_id}.jpg') 
