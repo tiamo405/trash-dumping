@@ -1,10 +1,14 @@
+import threading
 import cv2
 import numpy as np
 import time
 import os
 from datetime import datetime
+from utils import time_utils
 # import config
 from config import VIDEO_PATH, DEBUG
+# import logs
+from logs import setup_logger
 # import storage
 import storage.s3_minio as s3
 import storage.mongo as mongo
@@ -13,74 +17,120 @@ MongoDBManager = mongo.MongoDBManager()
 S3Minio = s3.S3Minio()
 
 
+def open_rtsp_camera(rtsp_url, logger_cam, retry_interval=5, max_retries=5, stop_cam = False):
+    retries = 0
+
+    while (retries < max_retries):
+        cap = cv2.VideoCapture(rtsp_url, cv2.CAP_FFMPEG)
+
+        if cap.isOpened():
+            print(f"Camera {rtsp_url} is opened.")
+            logger_cam.info(f"Camera {rtsp_url} is opened.")
+            return cap
+        else:
+            print(f"Error: Could not open camera {rtsp_url}. Retrying in {retry_interval} seconds...")
+            logger_cam.error(f"Error: Could not open camera {rtsp_url}. Retrying in {retry_interval} seconds...")
+            if stop_cam:
+                retries += 1
+            cap.release()
+            time.sleep(retry_interval)
+
+    print(f"Error: Could not open camera {rtsp_url} after multiple attempts. Exiting.")
+    logger_cam.error(f"Error: Could not open camera {rtsp_url} after multiple attempts. Exiting.")
+    # exit(1)
+    return None
 
 
-# Địa chỉ RTSP của camera
-rtsp_url = 'test.mp4'
+def main(camData, logger_cam, record_duration=60, overlap_time=10):
+    
+    rtsp_url = camData['rtsp_cam']
+    # Kết nối tới RTSP stream
+    cap = open_rtsp_camera(rtsp_url, logger_cam, stop_cam = False)
+    fps = int(cap.get(cv2.CAP_PROP_FPS))
 
-# Thời gian ghi video (tính theo giây)
-record_duration = 1 * 60  # 1 phút
-overlap_time = 10  # 30 giây trùng
 
-# Kết nối tới RTSP stream
-cap = cv2.VideoCapture(rtsp_url)
-fps = cap.get(cv2.CAP_PROP_FPS)
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 
-# Kiểm tra kết nối
-if not cap.isOpened():
-    print("Không thể kết nối tới camera RTSP.")
-    exit()
+    # Tính toán số frame cần ghi cho mỗi video và số frame cho đoạn trùng lặp
+    total_frames_to_record = int(record_duration * fps)
+    overlap_frames_count = int(overlap_time * fps)
 
-fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    overlap_frames = []  # Lưu trữ các frame trùng lặp
 
-def get_output_filename():
-    """Tạo tên file video dựa trên thời gian hiện tại"""
-    return datetime.now().strftime("%Y%m%d_%H%M%S") + ".mp4"
-
-overlap_frames = []  # Lưu trữ các frame trùng lặp
-
-while True:
-    # Tạo đối tượng VideoWriter để ghi video
-    out_filename = get_output_filename()
-    out = cv2.VideoWriter(out_filename, fourcc, 20.0, (int(cap.get(3)), int(cap.get(4))))
-
-    # Nếu có các frame trùng lặp từ video trước, ghi chúng vào video hiện tại
-    if overlap_frames:
-        for frame in overlap_frames:
-            out.write(frame)
-
-    overlap_frames = []  # Reset danh sách frame trùng lặp cho lần tiếp theo
-
-    start_time = time.time()
     while True:
-        ret, frame = cap.read()
-        if not ret:
-            print("Không thể nhận frame từ camera.")
-            break
+        # Tạo đối tượng VideoWriter để ghi video
+        start_time = time_utils.get_current_timestamp()
+        out_filename = str(camData['_id']) + "_" + str(start_time) + '.mp4'
+        out = cv2.VideoWriter(out_filename, fourcc, fps, (int(cap.get(3)), int(cap.get(4))))
 
-        # Ghi frame vào video hiện tại
-        out.write(frame)
+        # Nếu có các frame trùng lặp từ video trước, ghi chúng vào video hiện tại
+        if overlap_frames:
+            for frame in overlap_frames:
+                out.write(frame)
 
-        # Lưu frame vào danh sách để sử dụng cho đoạn trùng lặp 30 giây
-        overlap_frames.append(frame)
-        if len(overlap_frames) > fps * overlap_time:  # Giữ lại 30 giây cuối (nếu 20 fps thì sẽ giữ lại 600 frame)
-            overlap_frames.pop(0)
+        overlap_frames = []  # Reset danh sách frame trùng lặp cho lần tiếp theo
 
-        # Kiểm tra nếu đã ghi đủ thời gian (4 phút 30 giây)
-        if time.time() - start_time >= (record_duration - overlap_time):
-            break
+        frame_count = 0
+        while frame_count < (total_frames_to_record - overlap_frames_count):
+            ret, frame = cap.read()
+            if not ret:
+                print(f"Camera {rtsp_url} failed to grab frame. Retrying...")
+                logger_cam.error(f"Camera {rtsp_url} failed to grab frame. Retrying...")
+                cap.release()
+                cap = open_rtsp_camera(rtsp_url, logger_cam=logger_cam)
+                continue
 
-    # Ghi tiếp 30 giây cho video hiện tại
-    overlap_start_time = time.time()
-    while time.time() - overlap_start_time < overlap_time:
-        ret, frame = cap.read()
-        if not ret:
-            break
-        out.write(frame)
-        overlap_frames.append(frame)
-        if len(overlap_frames) > 20 * overlap_time:
-            overlap_frames.pop(0)
+            # Ghi frame vào video hiện tại
+            out.write(frame)
+            frame_count += 1
 
-    out.release()
-    print(f"Video {out_filename} đã lưu xong.")
+            # Lưu frame vào danh sách để sử dụng cho đoạn trùng lặp 10 giây
+            overlap_frames.append(frame)
+            if len(overlap_frames) > overlap_frames_count:  # Giữ lại 10 giây cuối (nếu 20 fps thì sẽ giữ lại 200 frame)
+                overlap_frames.pop(0)
 
+            
+        # Ghi tiếp 10 giây trùng lặp cho video hiện tại
+        overlap_frame_index = 0
+        while overlap_frame_index < overlap_frames_count:
+            ret, frame = cap.read()
+            if not ret:
+                print(f"Camera {rtsp_url} failed to grab frame. Retrying...")
+                logger_cam.error(f"Camera {rtsp_url} failed to grab frame. Retrying...")
+                cap.release()
+                cap = open_rtsp_camera(rtsp_url, logger_cam=logger_cam)
+                continue
+            out.write(frame)
+            overlap_frames.append(frame)
+            if len(overlap_frames) > overlap_frames_count:
+                overlap_frames.pop(0)
+            overlap_frame_index += 1
+
+        out.release()
+        
+        # save to MongoDB
+        video_data = {
+            "camera_id": str(camData['_id']),
+            "video_path": out_filename,
+            "start_time": start_time,
+            "end_time": time_utils.get_current_timestamp(),
+            "date_time": time_utils.get_date_timestamp()
+        }
+        MongoDBManager.insert_video(video_data)
+        
+        # Upload to S3 in a separate thread
+        s3_thread = threading.Thread(target=S3Minio.upload_file, args=(out_filename, out_filename, True))
+        s3_thread.start()
+        
+        print(f"Video {out_filename} đã lưu xong.")
+        logger_cam.info(f"Video {out_filename} đã lưu xong.")
+
+if __name__ == "__main__":
+    # Địa chỉ RTSP của camera
+    camData = MongoDBManager.get_camera_by_rtsp(VIDEO_PATH)
+    if camData is None:
+        print(f"Không tìm thấy camera với RTSP URL: {VIDEO_PATH}")
+        exit(1)
+    camid = str(camData['_id'])
+    logger_cam = setup_logger(f"record_cam_{camid}.log")
+    main(camData = camData, logger_cam = logger_cam)

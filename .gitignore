@@ -21,6 +21,7 @@ weights/
 *.mp4
 *.txt
 *.zip
+*.log
 
 d.jpg
 deteciion.avi

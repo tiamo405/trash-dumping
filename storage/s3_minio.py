@@ -25,9 +25,11 @@ class S3Minio:
         except S3Error as e:
             print(e)
 
-    def upload_file(self, file_path, object_name):
+    def upload_file(self, file_path, object_name, is_remove=False):
         try:
             self.client.fput_object(self.bucket_name, object_name, file_path)
+            if is_remove:
+                os.remove(file_path)
         except S3Error as e:
             print(e)
 

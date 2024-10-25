@@ -21,3 +21,4 @@ fastapi==0.111.0
 # onnxruntime==1.18.1
 pymongo==4.9.1
 tensorflow==2.17.0
+python -m pip install "pymongo[srv]"==3.6
