@@ -1,11 +1,14 @@
+import os, sys
+root = os.getcwd()
+sys.path.append(root)
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from datetime import datetime
-
+from config import MONGO_URI
 class MongoDBManager:
-    def __init__(self, uri="mongodb://admin:admin@localhost:27017/", db_name="trash_dumping"):
+    def __init__(self, uri=MONGO_URI, db_name="doan"):
         self.client = MongoClient(uri)
-        self.db = self.client[db_name]
+        self.db = self.client.doan
 
     # Thêm tài liệu vào bộ sưu tập (insert vào camera)
     def insert_camera(self, cam_data):
@@ -30,11 +33,10 @@ class MongoDBManager:
         violations = self.db['violation_images']
         result = violations.insert_one(violation_data)
         return str(result.inserted_id)
-    
-    # Thêm tài liệu vào bộ sưu tập violation_videos (insert vào violation_videos)
-    def insert_violation_video(self, violation_video_data):
-        violation_videos = self.db['violation_videos']
-        result = violation_videos.insert_one(violation_video_data)
+    # them video
+    def insert_video(self, video_data):
+        videos = self.db['videos']
+        result = videos.insert_one(video_data)
         return str(result.inserted_id)
 
     # Tìm camera theo id
@@ -57,15 +59,6 @@ class MongoDBManager:
         roles = self.db['roles']
         return roles.find_one({"role_name": role_name})
     
-    # Tìm violation_image theo id
-    def get_violation_image_by_id(self, violation_id):
-        violations = self.db['violation_images']
-        return violations.find_one({"_id": ObjectId(violation_id)})
-    
-    # Tìm violation_video theo violation_image_id
-    def get_violation_video_by_violation_id(self, violation_image_id):
-        violation_videos = self.db['violation_videos']
-        return violation_videos.find_one({"violation_image_id": violation_image_id})
 
     # Cập nhật camera theo ID
     def update_camera_by_id(self, cam_id, update_data):
@@ -137,46 +130,57 @@ class MongoDBManager:
         )
         return result.modified_count # 1 : ok, 0 : fail
 
+# from pymongo.mongo_client import MongoClient as MongoClientAtlas    
+# class MongoDBManagerAtlas:
+#     def __init__(self, uri="mongodb+srv://nam05052002:<db_password>@cluster0.27uon.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"):
+#         self.client = MongoClientAtlas(uri)
+#         self.db = self.client['Cluster0']
     
+
+
 
 # Ví dụ về việc sử dụng class này
 if __name__ == "__main__":
     mongo_manager = MongoDBManager()
 
-    # new_camera = {
-    #     "rtsp_cam": 'test_model/video_test/2.mp4',
-    #     "is_activate": True,
-    #     "date_added": datetime.utcnow().timestamp(),
-    #     "location": "video test",
-    #     "add_by_customer_id": "66f50f9d6a42a68067ae030b",
-    # }
-
+    new_camera = {
+        "rtsp_cam": 'rtsp://cxview:gs252525@113.161.58.13:554/Streaming/Channels/701',
+        "is_activate": True,
+        "date_added": int(datetime.utcnow().timestamp()),
+        "location": "video test 1",
+        "add_by_customer_id": "671b0c1be9383de32aefd299",
+    }
+    # id = mongo_manager.insert_camera(new_camera)
+    # print(id)
     # new_role = {
     #     "role": "ADMIN",
     #     "role_name": "admin",
     #     "permissions": ["create", "read", "update", "delete"],
     #     "date_create": int(datetime.utcnow().timestamp())
     # }
+    # id = mongo_manager.insert_role(new_role)
+    # print(id)
 
-    # new_account = {
-    #     "username": "admin",
-    #     "password": "admin",
-    #     "email": "admin@gmail.com",
-    #     "dob": "01/01/2000",
-    #     "phoneNumber": "0123456789",
-    #     "full_name": "tran nam",
-    #     "date_create": datetime.utcnow().timestamp(),
-    #     "role": str(role_id)
-    # }
-
-    find_camera = mongo_manager.get_camera_by_rtsp('test_model/video_test/2.mp4')
-    # find_camera['location'] = 'video test 1 2'
-    # modified = mongo_manager.update_camera(find_camera)
+    new_account = {
+        "username": "admin",
+        "password": "admin",
+        "email": "admin@gmail.com",
+        "dob": "01/01/2000",
+        "phoneNumber": "0123456789",
+        "full_name": "tran nam",
+        "date_create": datetime.utcnow().timestamp(),
+        "role": str('671b0a215ebeec220d445bf7')
+    }
+    # id = mongo_manager.insert_account(new_account)
+    # print(id)
     # find_camera = mongo_manager.get_camera_by_rtsp('test_model/video_test/2.mp4')
-    camId = str(find_camera['_id'])
-    # find image violation by id
-    find_violation = mongo_manager.get_all_violation_images(camId, 1729530000)
-    print(find_violation)
+    # # find_camera['location'] = 'video test 1 2'
+    # # modified = mongo_manager.update_camera(find_camera)
+    # # find_camera = mongo_manager.get_camera_by_rtsp('test_model/video_test/2.mp4')
+    # camId = str(find_camera['_id'])
+    # # find image violation by id
+    # find_violation = mongo_manager.get_all_violation_images(camId, 1729530000)
+    # print(find_violation)
 
     # find_all_violation = mongo_manager.get_all_violation_images(cam_id, 1727715600)
     # print(find_all_violation)

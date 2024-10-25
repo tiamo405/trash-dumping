@@ -10,8 +10,11 @@ SECURE = False
 WEIGHT = 'checkpoints/trash/yowo_v2_medium/yowo_v2_medium_epoch_50.pth'
 
 # video
-VIDEO_PATH = 'test_model/video_test/2.mp4' # or camera
+# VIDEO_PATH = 'test_model/video_test/2.mp4' # or camera
+VIDEO_PATH = 'rtsp://cxview:gs252525@113.161.58.13:554/Streaming/Channels/701'
 
 # debug
 DEBUG = True
 
+# mongo
+MONGO_URI = "mongodb+srv://nam05052002:vWAESJh9bivKcBYY@cluster0.27uon.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
