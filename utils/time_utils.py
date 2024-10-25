@@ -5,7 +5,7 @@ import pytz
 tz_vietnam = pytz.timezone('Asia/Ho_Chi_Minh')
 
 # get timestame
-def get_timestamp():
+def get_current_timestamp():
     return int(datetime.now(tz_vietnam).timestamp())
 
 # get timestamp date
