@@ -41,7 +41,7 @@ def open_rtsp_camera(rtsp_url, logger_cam, retry_interval=5, max_retries=5, stop
     return None
 
 
-def main(camData, logger_cam, record_duration=60, overlap_time=10):
+def main(camData, logger_cam, record_duration=300, overlap_time=30):
     
     rtsp_url = camData['rtsp_cam']
     # Kết nối tới RTSP stream
@@ -56,10 +56,11 @@ def main(camData, logger_cam, record_duration=60, overlap_time=10):
     overlap_frames_count = int(overlap_time * fps)
 
     overlap_frames = []  # Lưu trữ các frame trùng lặp
-
+    start_time_tmp = None
     while True:
         # Tạo đối tượng VideoWriter để ghi video
-        start_time = time_utils.get_current_timestamp()
+        start_time = start_time_tmp if start_time_tmp is not None else time_utils.get_current_timestamp() # Thời gian bắt đầu ghi video
+        print(f"Start recording video at {start_time}")
         out_filename = str(camData['_id']) + "_" + str(start_time) + '.mp4'
         out = cv2.VideoWriter(out_filename, fourcc, fps, (int(cap.get(3)), int(cap.get(4))))
 
@@ -84,13 +85,15 @@ def main(camData, logger_cam, record_duration=60, overlap_time=10):
             out.write(frame)
             frame_count += 1
 
-            # Lưu frame vào danh sách để sử dụng cho đoạn trùng lặp 10 giây
+            # Lưu frame vào danh sách để sử dụng cho đoạn trùng lặp overlap_time giây
             overlap_frames.append(frame)
-            if len(overlap_frames) > overlap_frames_count:  # Giữ lại 10 giây cuối (nếu 20 fps thì sẽ giữ lại 200 frame)
+            if len(overlap_frames) > overlap_frames_count:  # Giữ lại overlap_time giây cuối 
                 overlap_frames.pop(0)
 
             
         # Ghi tiếp 10 giây trùng lặp cho video hiện tại
+        start_time_tmp = time_utils.get_current_timestamp() # Cập nhật thời gian bắt đầu cho video tiếp theo
+        print(f"Start recording overlap frames at {start_time_tmp}")
         overlap_frame_index = 0
         while overlap_frame_index < overlap_frames_count:
             ret, frame = cap.read()
@@ -116,6 +119,7 @@ def main(camData, logger_cam, record_duration=60, overlap_time=10):
             "end_time": time_utils.get_current_timestamp(),
             "date_time": time_utils.get_date_timestamp()
         }
+        print(video_data)
         MongoDBManager.insert_video(video_data)
         
         # Upload to S3 in a separate thread
