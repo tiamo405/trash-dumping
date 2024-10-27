@@ -5,12 +5,14 @@ root = os.getcwd()
 sys.path.append(root)
 from ..utils.Respones import *
 from storage.mongo import MongoDBManager
+from storage.s3_minio import S3Minio
 from fastapi import APIRouter, Depends, HTTPException, Form
 
 
 camera_router = APIRouter(prefix="/prod/api/v1/camera", tags=["camera"])
 
 mongo_manager = MongoDBManager()
+s3 = S3Minio()
 
 def check_camera(rtsp_url):
     cap = cv2.VideoCapture(rtsp_url)
@@ -52,6 +54,7 @@ async def list_cam(page: int = 1, limit: int = 5):
     cameras = mongo_manager.get_all_cameras()
     for cam in cameras:
         cam["_id"] = str(cam["_id"])
+        cam["origin_image"] = s3.geturl(cam["origin_image"])
     start_index = (page - 1) * limit
     end_index = start_index + limit
     paginated_data = cameras[start_index:end_index]
