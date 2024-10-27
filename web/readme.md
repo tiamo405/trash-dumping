@@ -17,7 +17,7 @@ curl -X 'GET' \
     "cameras": [
       {
         "_id": "671b0ca3b236731f0056e606",
-        "rtsp_cam": "rtsp://cxview:gs252525@113.161.58.13:554/Streaming/Channels/701",
+        "rtsp_cam": "rtsp://test:12345@113.161.58.13:554/Streaming/Channels/701",
         "is_activate": true,
         "date_added": 1729800755,
         "location": "GS HCM",
@@ -42,7 +42,7 @@ curl -X 'GET' \
 - curl
 ```sh
 curl -X 'GET' \
-  'http://127.0.0.1:5005/prod/api/v1/view/get_history?rtsp_url=rtsp%3A%2F%2Fcxview%3Ags252525%40113.161.58.13%3A554%2FStreaming%2FChannels%2F701&date=1729875600&page=1&limit=3' \
+  'http://127.0.0.1:5005/prod/api/v1/view/get_history?rtsp_url=rtsp%3A%2F%2Ftest%3Ags12345%40113.161.58.13%3A554%2FStreaming%2FChannels%2F701&date=1729875600&page=1&limit=3' \
   -H 'accept: application/json'
 ```
 - reponse
