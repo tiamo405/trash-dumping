@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .camera-container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 10px;
+            overflow-x: auto; /* Cho phép cuộn ngang nếu bảng quá rộng */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            table-layout: fixed; /* Giới hạn chiều rộng cột */
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            overflow: hidden;
+            text-overflow: ellipsis; /* Ẩn bớt nội dung quá dài */
+            white-space: nowrap; /* Không xuống dòng */
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .img-column img {
+            width: 224px !important;
+            height: 224px !important;
+            object-fit: cover !important;
+            display: block; /* Đảm bảo ảnh là một khối phần tử */
+            margin: 0 auto; /* Căn giữa ảnh trong ô */
+        }
+        /* Đặt chiều rộng tối đa cho các cột */
+        .id-column { width: 100px; }
+        .rtsp-column { width: 150px; }
+        .location-column { width: 100px; }
+        .date-column { width: 120px; }
+        .status-column { width: 80px; }
+        .customer-column { width: 100px; }
+    </style>
+</head>
+<body>
+
+<div class="camera-container">
+    <h1>Danh sách Camera</h1>
+    <table id="cameraTable">
+        <thead>
+            <tr>
+                <th class="id-column">Camera ID</th>
+                <th class="rtsp-column">RTSP Link</th>
+                <th class="location-column">Location</th>
+                <th class="date-column">Date Added</th>
+                <th class="status-column">Is Active</th>
+                <th class="customer-column">Customer ID</th>
+                <th class="img-column">Origin Image</th>
+            </tr>
+        </thead>
+        <tbody id="cameraList">
+            <!-- Rows sẽ được thêm động ở đây -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    async function fetchCameras(page = 1, limit = 5) {
+        try {
+            const response = await fetch(`http://192.168.5.106:5005/prod/api/v1/camera/list?page=${page}&limit=${limit}`);
+            const data = await response.json();
+
+            if (data.entities && data.entities.cameras) {
+                displayCameras(data.entities.cameras);
+            } else {
+                document.getElementById('cameraList').innerHTML = '<tr><td colspan="7">Không có camera nào được tìm thấy.</td></tr>';
+            }
+        } catch (error) {
+            console.error("Error fetching cameras:", error);
+            document.getElementById('cameraList').innerHTML = '<tr><td colspan="7">Lỗi khi tải danh sách camera.</td></tr>';
+        }
+    }
+
+    function displayCameras(cameras) {
+        const cameraList = document.getElementById('cameraList');
+        cameraList.innerHTML = ''; // Clear previous content
+
+        cameras.forEach(camera => {
+            const row = document.createElement('tr');
+
+            row.innerHTML = `
+                <td>${camera._id}</td>
+                <td>${camera.rtsp_cam}</td>
+                <td>${camera.location}</td>
+                <td>${new Date(camera.date_added * 1000).toLocaleString()}</td>
+                <td>${camera.is_activate ? 'Yes' : 'No'}</td>
+                <td>${camera.add_by_customer_id}</td>
+                <td><img src="${camera.origin_image}" alt="Camera Image"></td>
+            `;
+
+            cameraList.appendChild(row);
+        });
+    }
+
+    // Fetch cameras when the page loads
+    fetchCameras();
+</script>
+
+</body>
+</html>
