@@ -5,7 +5,7 @@ import os
 import time
 import numpy as np
 import torch
-import imageio
+from copy import deepcopy
 from PIL import Image
 
 from dataset.transforms import BaseTransform
@@ -14,7 +14,7 @@ from utils.box_ops import rescale_bboxes
 from utils.vis_tools import vis_detection
 from config import build_dataset_config, build_model_config
 from models import build_model
-
+from logs import setup_logger
 from config import WEIGHT, VIDEO_PATH, DEBUG
 
 from deep_sort.tracker import Tracker
@@ -122,22 +122,46 @@ def multi_hot_vis(args, frame, out_bboxes, orig_w, orig_h, class_names, act_pose
     
     return frame
 
-def save_storage(frame):
-    timesteamp = time_utils.get_current_timestamp()
+def save_storage(frame, logger_cam):
+    current_timesteamp = time_utils.get_current_timestamp()
     date_timestamp = time_utils.get_date_timestamp()
     camera = mongo.get_camera_by_rtsp(VIDEO_PATH)
     camera_id = str(camera['_id'])
     # save mongo
     new_detection = {
         "camera_id": camera_id,
-        "detect_timestamp": timesteamp,
+        "detect_timestamp": current_timesteamp,
         "violation_date" : date_timestamp,
     }
     violation_image_id = mongo.insert_violation(new_detection)
     violation_image_id = str(violation_image_id)
+    logger_cam.info(f"New detected trashDumping id {violation_image_id}")
     cv2.imwrite(f'temp_file/{violation_image_id}.jpg', frame)
     s3.upload_file(f'temp_file/{violation_image_id}.jpg', f'{violation_image_id}.jpg')
     os.remove(f'temp_file/{violation_image_id}.jpg') 
+
+def open_rtsp_camera(rtsp_url, logger_cam, retry_interval=5, max_retries=5, stop_cam = False):
+    retries = 0
+
+    while (retries < max_retries):
+        cap = cv2.VideoCapture(rtsp_url, cv2.CAP_FFMPEG)
+
+        if cap.isOpened():
+            print(f"Camera {rtsp_url} is opened.")
+            logger_cam.info(f"Camera {rtsp_url} is opened.")
+            return cap
+        else:
+            print(f"Error: Could not open camera {rtsp_url}. Retrying in {retry_interval} seconds...")
+            logger_cam.error(f"Error: Could not open camera {rtsp_url}. Retrying in {retry_interval} seconds...")
+            if stop_cam:
+                retries += 1
+            cap.release()
+            time.sleep(retry_interval)
+
+    print(f"Error: Could not open camera {rtsp_url} after multiple attempts. Exiting.")
+    logger_cam.error(f"Error: Could not open camera {rtsp_url} after multiple attempts. Exiting.")
+    # exit(1)
+    return None
 
 @torch.no_grad()
 def detect(args, model, device, transform, class_names, class_colors):
@@ -146,13 +170,16 @@ def detect(args, model, device, transform, class_names, class_colors):
     os.makedirs(save_path, exist_ok=True)
 
     # path to video
-    path_to_video = args.video
+    rtsp_url = args.video
+    cam_data = mongo.get_camera_by_rtsp(rtsp_url)
 
+    name_log = f'ai_cam_{cam_data["_id"]}.log'
+    logger_cam = setup_logger(name_log)
     # video
-    video = cv2.VideoCapture(path_to_video)
+    cap = open_rtsp_camera(rtsp_url, logger_cam, stop_cam = False)
     if DEBUG:
-        width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
-        height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
         save_size = (width, height)
         save_name = os.path.join(save_path, args.video.split('/')[-1].split('.')[0]+ '.avi')
@@ -166,22 +193,20 @@ def detect(args, model, device, transform, class_names, class_colors):
     # Tạo danh sách lưu các ID
     trash_ids = []
     while(True):
-        ret, frame = video.read()
-        
+        ret, frame = cap.read()
+        if not ret:
+            print(f"Camera {rtsp_url} failed to grab frame. Retrying...")
+            logger_cam.error(f"Camera {rtsp_url} failed to grab frame. Retrying...")
+            cap.release()
+            cap = open_rtsp_camera(rtsp_url, logger_cam=logger_cam)
+            continue
         if ret:
             # count frame
             num_frame += 1
             # to RGB
             frame_rgb = frame[..., (2, 1, 0)]
 
-        
             # prepare
-            # if len(video_clip) <= 0:
-            #     for _ in range(args.len_clip):
-            #         # test them cac anh ban dau mau den het
-            #         frame_pil = Image.new('RGB', (width, height), (0, 0, 0))
-            #         video_clip.append(frame_pil)
-            
             if len(video_clip) < args.len_clip: # fix lỗi, khi nào đủ số frame mới cho vào model 
                 frame_pil = Image.fromarray(frame_rgb.astype(np.uint8))
                 video_clip.append(frame_pil)
@@ -247,29 +272,17 @@ def detect(args, model, device, transform, class_names, class_colors):
                     box = track.bbox
                     left, top, right, bottom = box
                     track_id = track.track_id
-                    frame = cv2.rectangle(frame, (int(left), int(top)), (int(right), int(bottom)), class_colors["trashDumping"], 2)
-                    frame = cv2.putText(frame, f'id: {str(track_id)}', (int(left), int(top-10)), cv2.FONT_HERSHEY_SIMPLEX, 1.0, class_colors["trashDumping"], 1)
+                    frame_copy = deepcopy(frame)
+                    frame_copy = cv2.rectangle(frame_copy, (int(left), int(top)), (int(right), int(bottom)), class_colors["trashDumping"], 2)
+                    frame_copy = cv2.putText(frame_copy, f'id: {str(track_id)}', (int(left), int(top-10)), cv2.FONT_HERSHEY_SIMPLEX, 1.0, class_colors["trashDumping"], 1)
                     # Kiểm tra xem có ID nào mới không
                     if track_id not in trash_ids:
                         # Thêm ID mới vào danh sách
                         trash_ids.append(track_id)
                         # Lưu vào MongoDB
-                        save_storage_thread = threading.Thread(target=save_storage, args=(frame,))
+                        save_storage_thread = threading.Thread(target=save_storage, args=(frame_copy, logger_cam))
                         save_storage_thread.start()
-                # frame = vis_detection(
-                #     frame=frame,
-                #     scores=scores,
-                #     labels=labels,
-                #     bboxes=bboxes,
-                #     vis_thresh=args.vis_thresh,
-                #     class_names=class_names,
-                #     class_colors=class_colors,
-                #     name_video= path_to_video.split('/')[-1].split('.')[0],
-                #     num_frame = num_frame
-                #     )
-                
-            # save
-            # frame_resized = cv2.resize(frame, save_size)
+                        
             if DEBUG:
                 out.write(frame)
             # cv2.imwrite('debug.jpg', frame_resized)
@@ -283,24 +296,26 @@ def detect(args, model, device, transform, class_names, class_colors):
                 cv2.imshow('key-frame detection', frame)
                 cv2.waitKey(1)
 
-        else:
-            break
-
-    video.release()
-    out.release()
+    # video.release()
+    # out.release()
 
     # generate GIF
-    if args.gif:
-        save_name = os.path.join(save_path, args.video.split('/')[-1].split('.')[0]+ '.gif')
-        print('generating GIF ...')
-        imageio.mimsave(save_name, image_list, fps=fps)
-        print('GIF done: {}'.format(save_name))
+    # if args.gif:
+    #     save_name = os.path.join(save_path, args.video.split('/')[-1].split('.')[0]+ '.gif')
+    #     print('generating GIF ...')
+    #     imageio.mimsave(save_name, image_list, fps=fps)
+    #     print('GIF done: {}'.format(save_name))
 
 
 if __name__ == '__main__':
     np.random.seed(100)
     args = parse_args()
     args.video = VIDEO_PATH
+    cam_data = mongo.get_camera_by_rtsp(VIDEO_PATH)
+    if cam_data is None:
+        print(f"Không tìm thấy camera với RTSP URL: {VIDEO_PATH}")
+        exit
+
     args.weight = WEIGHT
 
     # cuda
