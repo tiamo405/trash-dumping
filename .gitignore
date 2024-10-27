@@ -10,7 +10,7 @@ trash/data_raw
 
 results/
 weights/
-
+logs/
 
 *.pt
 *.pth
@@ -21,7 +21,7 @@ weights/
 *.mp4
 *.txt
 *.zip
-*.log
+
 
 d.jpg
 deteciion.avi
