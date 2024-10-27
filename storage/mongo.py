@@ -9,61 +9,63 @@ class MongoDBManager:
     def __init__(self, uri=MONGO_URI, db_name="doan"):
         self.client = MongoClient(uri)
         self.db = self.client.doan
+        self.collection_camera = self.db['cameras']
+        self.collection_account = self.db['customers']
+        self.collection_role = self.db['roles']
+        self.collection_violation_image = self.db['violation_images']
+        self.collection_video = self.db['videos']
 
     # Thêm tài liệu vào bộ sưu tập (insert vào camera)
     def insert_camera(self, cam_data):
-        cameras = self.db['cameras']
-        result = cameras.insert_one(cam_data)
+        result = self.collection_camera.insert_one(cam_data)
         return str(result.inserted_id)
 
     # Thêm tài liệu vào bộ sưu tập tài khoản (insert vào account)
     def insert_account(self, account_data):
-        accounts = self.db['customers']
-        result = accounts.insert_one(account_data)
+        result = self.collection_account.insert_one(account_data)
         return str(result.inserted_id)
 
     # Thêm role vào bộ sưu tập roles
     def insert_role(self, role_data):
-        roles = self.db['roles']
-        result = roles.insert_one(role_data)
+        result = self.collection_role.insert_one(role_data)
         return str(result.inserted_id)
     
     # Thêm tài liệu vào bộ sưu tập violation_images (insert vào violation_images)
     def insert_violation(self, violation_data):
-        violations = self.db['violation_images']
-        result = violations.insert_one(violation_data)
+        result = self.collection_violation_image.insert_one(violation_data)
         return str(result.inserted_id)
     # them video
     def insert_video(self, video_data):
-        videos = self.db['videos']
-        result = videos.insert_one(video_data)
+        result = self.collection_video.insert_one(video_data)
         return str(result.inserted_id)
 
     # Tìm camera theo id
     def get_camera_by_id(self, cam_id):
-        cameras = self.db['cameras']
-        return cameras.find_one({"_id": ObjectId(cam_id)})
+        
+        return self.collection_camera.find_one({"_id": ObjectId(cam_id)})
 
     # Tìm camera theo URL RTSP
     def get_camera_by_rtsp(self, rtsp_cam):
-        cameras = self.db['cameras']
-        return cameras.find_one({"rtsp_cam": rtsp_cam})
+
+        return self.collection_camera.find_one({"rtsp_cam": rtsp_cam})
 
     # Tìm tài khoản theo username
     def get_account_by_username(self, username):
-        accounts = self.db['customers']
-        return accounts.find_one({"username": username})
+
+        return self.collection_account.find_one({"username": username})
 
     # Tìm role theo tên role
     def get_role_by_name(self, role_name):
-        roles = self.db['roles']
-        return roles.find_one({"role_name": role_name})
+        return self.collection_role.find_one({"role_name": role_name})
     
+    # tim image violation by id
+    def get_violation_image_by_id(self, id_image):
+        violations = self.db['violation_images']
+        return self.collection_violation_image.find_one({"_id": ObjectId(id_image)})
 
     # Cập nhật camera theo ID
     def update_camera_by_id(self, cam_id, update_data):
-        cameras = self.db['cameras']
-        result = cameras.update_one(
+        result = self.collection_camera.update_one(
             {"_id": ObjectId(cam_id)},
             {"$set": update_data}
         )
@@ -71,8 +73,7 @@ class MongoDBManager:
     
     # Cập nhật tài khoản theo ID
     def update_account_by_id(self, account_id, update_data):
-        accounts = self.db['customers']
-        result = accounts.update_one(
+        result = self.collection_account.update_one(
             {"_id": ObjectId(account_id)},
             {"$set": update_data}
         )
@@ -80,20 +81,17 @@ class MongoDBManager:
 
     # Xóa camera theo ID
     def delete_camera_by_id(self, cam_id):
-        cameras = self.db['cameras']
-        result = cameras.delete_one({"_id": ObjectId(cam_id)})
+        result = self.collection_camera.delete_one({"_id": ObjectId(cam_id)})
         return result.deleted_count
     
     # Xóa tài khoản theo ID
     def delete_account_by_id(self, account_id):
-        accounts = self.db['customers']
-        result = accounts.delete_one({"_id": ObjectId(account_id)})
+        result = self.collection_account.delete_one({"_id": ObjectId(account_id)})
         return result.deleted_count
     
     # xoas role theo ID
     def delete_role_by_id(self, role_id):
-        roles = self.db['roles']
-        result = roles.delete_one({"_id": ObjectId(role_id)})
+        result = self.collection_role.delete_one({"_id": ObjectId(role_id)})
         return result.deleted_count
 
     # Lấy danh sách tất cả camera
@@ -144,14 +142,14 @@ if __name__ == "__main__":
     mongo_manager = MongoDBManager()
 
     new_camera = {
-        "rtsp_cam": 'rtsp://cxview:gs252525@113.161.58.13:554/Streaming/Channels/701',
+        "rtsp_cam": 'test_model/video_test/2.mp4',
         "is_activate": True,
         "date_added": int(datetime.utcnow().timestamp()),
         "location": "video test 1",
         "add_by_customer_id": "671b0c1be9383de32aefd299",
     }
-    # id = mongo_manager.insert_camera(new_camera)
-    # print(id)
+    id = mongo_manager.insert_camera(new_camera)
+    print(id)
     # new_role = {
     #     "role": "ADMIN",
     #     "role_name": "admin",
