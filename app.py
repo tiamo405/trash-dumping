@@ -9,11 +9,16 @@ from web.routers.history import view_router
 
 app = FastAPI()
 
-
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
-
 app.include_router(camera_router)
 app.include_router(view_router)
+
+allow_origins = ["*"]
+app.add_middleware(CORSMiddleware, 
+                   allow_origins=allow_origins, 
+                   allow_credentials=True, 
+                   allow_methods=["*"], 
+                   allow_headers=["*"])
+
 
 # # hello world
 @app.get("/")
