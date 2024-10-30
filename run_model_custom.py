@@ -132,6 +132,7 @@ def save_storage(frame, logger_cam):
         "camera_id": camera_id,
         "detect_timestamp": current_timesteamp,
         "violation_date" : date_timestamp,
+        "is_violation": "Unknown"
     }
     violation_image_id = mongo.insert_violation(new_detection)
     violation_image_id = str(violation_image_id)
