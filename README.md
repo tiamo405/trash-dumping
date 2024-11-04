@@ -124,8 +124,18 @@ or you can just run the script:
 ```Shell
 bash demo_trash.sh
 ```
-
-
+# docker
+# image base
+```sh
+docker build -t littering:0.1-base -f deploy/Dockerfile.base .
+```
+# run
+```sh
+docker run --rm --name dev --ipc=host --net=host -dit --privileged \
+-e VIDEO_PATH='rtsp://cxview:gs252525@113.161.58.13:554/Streaming/Channels/701' \
+-v /home/namtp/Desktop/code/trash-dumping:/workspace \
+python:3.9-slim
+```
 ## Note
 ```
 Author  : Tran Phuong Nam

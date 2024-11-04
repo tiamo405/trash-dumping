@@ -1,0 +1,25 @@
+# Sử dụng một base image đã có Python và các dependencies cơ bản
+FROM python:3.9-slim
+
+# # Thiết lập thư mục làm việc
+WORKDIR /workspace
+
+# Sao chép file requirements.txt vào thư mục làm việc
+COPY requirements.txt .
+
+#update pip
+RUN pip install --upgrade pip
+
+# install opencv
+
+RUN pip3 install opencv-python-headless==4.5.3.56
+
+
+# Cài đặt các phụ thuộc từ tệp requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# RUN apt-get update && apt-get install -y curl wget
+
+# RUN curl -fsSL https://get.docker.com | sh
+
+
