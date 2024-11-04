@@ -6,11 +6,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from web.routers.camera import camera_router
 from web.routers.history import view_router
+from web.routers.login import login_router
 
 app = FastAPI()
 
 app.include_router(camera_router)
 app.include_router(view_router)
+app.include_router(login_router)
 
 allow_origins = ["*"]
 app.add_middleware(CORSMiddleware, 
