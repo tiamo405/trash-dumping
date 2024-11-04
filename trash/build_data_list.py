@@ -40,7 +40,7 @@ def create_txt(raw_data, label, arr_videos, file_txt) :
 
 def build_split_data(raw_data) :
     # labels = os.listdir(os.path.join(raw_data, 'labels')) # lay cac label
-    labels = ["Walking", "trashDumping"]
+    labels = ["Normal", "Littering"]
     train_file_txt = '{}/{}list.txt'.format(raw_data ,'train')
     test_file_txt = '{}/{}list.txt'.format(raw_data ,'test')
     if os.path.exists(train_file_txt):

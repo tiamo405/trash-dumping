@@ -83,6 +83,6 @@ def write_txt(noidung, path, remove = False):
         f.write("%s\n" % noidung)
         f.close()
 if __name__ =="__main__":
-    if find_file(nameFile='VID_20230310_161738.mp4', nameFolder='data/train/datasets/labels/trashDumping') :
+    if find_file(nameFile='VID_20230310_161738.mp4', nameFolder='data/train/datasets/labels/Littering') :
         print(1)
     else : print(0)

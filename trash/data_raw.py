@@ -4,8 +4,8 @@ import glob
 import shutil
 
 def edit_txt(path, label) :
-    dict_label = {"Walking": "2",
-                  "trashDumping": "1"}
+    dict_label = {"Normal": "2",
+                  "Littering": "1"}
     files = list(glob.glob(f"{path}/*.txt"))
     for file_path in files :
         with open(file_path, 'r') as file:
@@ -24,7 +24,7 @@ def remove_folder(folder_1, folder_2):
 
 dir_raw = "trash/data_raw" # chứa các folder file label.txt
 dir_clear = "trash"
-labels = ["trashDumping"]
+labels = ["Littering"]
 name_folder_raw = "video_split"
 
 def clear_data():
@@ -50,6 +50,6 @@ def clear_data():
 
 if __name__ == "__main__":
 
-    # edit_txt(path= "video1_00031-00005", label="trashDumping")
+    # edit_txt(path= "video1_00031-00005", label="Littering")
     clear_data()
     # remove_folder("linhtinh", "video_test")

@@ -10,7 +10,7 @@ def add0tofile(pathfolder):
 
 def rename(path) :
     for i , fname in enumerate(sorted(os.listdir(path))) :
-        new_name ='Walking_'+ str(i).zfill(4)+'.'+ fname.split('.')[-1]
+        new_name ='Normal_'+ str(i).zfill(4)+'.'+ fname.split('.')[-1]
         os.rename(os.path.join(path, fname), os.path.join(path, new_name ))
 
 def parse_args():
@@ -25,5 +25,5 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
     # build_split_data(args.raw_path)
-    # rename("trash/videos/Walking")
-    add0tofile('trash/rgb-images/Walking')
+    # rename("trash/videos/Normal")
+    add0tofile('trash/rgb-images/Normal')

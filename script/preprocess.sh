@@ -1,4 +1,4 @@
-# docker run --name trashDumping-namtp --runtime nvidia -dit -v /mnt/nvme0n1/phuongnam/Trash-Dumping:/workspace nvcr.io/nvidia/pytorch:21.03-py3
+# docker run --name Littering-namtp --runtime nvidia -dit -v /mnt/nvme0n1/phuongnam/Trash-Dumping:/workspace nvcr.io/nvidia/pytorch:21.03-py3
 
 # tach frame tu video 
 # python extract_frame/video2frame.py \

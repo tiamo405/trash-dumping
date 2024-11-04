@@ -27,7 +27,7 @@ dataset_config = {
         # class names
         'valid_num_classes': 2,
         'label_map': (
-                    'trashDumping',     'Walking'
+                    'Littering',     'Normal'
                 ),
     },
     'ucf24': {
@@ -60,7 +60,7 @@ dataset_config = {
         #             'GolfSwing',      'HorseRiding',       'IceDancing',        'LongJump',
         #             'PoleVault',      'RopeClimbing',      'SalsaSpin',         'SkateBoarding',
         #             'Skiing',         'Skijet',            'SoccerJuggling',    'Surfing',
-        #             'TennisSwing',    'TrampolineJumping', 'VolleyballSpiking', 'WalkingWithDog'
+        #             'TennisSwing',    'TrampolineJumping', 'VolleyballSpiking', 'NormalWithDog'
         #         ),
         'valid_num_classes': 2,
         'label_map': (

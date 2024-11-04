@@ -98,7 +98,7 @@ def vis_detection(frame, scores, labels, bboxes, vis_thresh, class_names, class_
                 # visualize bbox
             frame = plot_bbox_labels(frame, bbox, mess, cls_color, text_scale=ts)
 
-            if class_names[label] =='trashDumping':
+            if class_names[label] =='Littering':
                 save_storage_thread = threading.Thread(target=save_storage, args=(frame,))
                 save_storage_thread.start()
                 if DEBUG:

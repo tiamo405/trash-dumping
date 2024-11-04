@@ -91,10 +91,10 @@ def crop_video_to_image(path_video, folder_save, label, model_detect_person, mod
                 id_frame = len(os.listdir(path_save_img_id))+1
                 cv2.imwrite(os.path.join(path_save_img_id, str(id_frame).zfill(5) + '.jpg'), frame_copy)
                 # print(f'save image: name video: {name_video}, id:{track_id}, id_frame:{id_frame}')
-                if label == 'trashDumping' :
+                if label == 'Littering' :
                     write_txt(noidung= '1 {} {} {} {}'.format(left, top, right, bottom),\
                             path= os.path.join(path_save_labels_id, str(id_frame).zfill(5) + '.txt'))
-                elif label == 'Walking' :
+                elif label == 'Normal' :
                     write_txt(noidung= '2 {} {} {} {}'.format(left, top, right, bottom),\
                             path= os.path.join(path_save_labels_id, str(id_frame).zfill(5) + '.txt'))
                 else :
@@ -102,7 +102,7 @@ def crop_video_to_image(path_video, folder_save, label, model_detect_person, mod
                             path= os.path.join(path_save_labels_id, str(id_frame).zfill(5) + '.txt'))
                 # ve de kiem tra detect cua video
 
-                cv2.putText(frame, 'frame: '+ str(id_frame), (int(left), int(top-10)), font, 1.0, (0,255,0), 1)
+                cv2.putText(frame, 'frame: '+ str(id_frame), (10, 10), font, 1.0, (0,255,0), 1)
                 cv2.putText(frame, f'id: {str(track_id)} ' , (int(left) + 6, int(top) + 30), font, 1.0, (colors[track_id % len(colors)]), 1)
                 cv2.rectangle(frame, (int(left), int(top)), (int(right), int(bottom)), (colors[track_id % len(colors)]), 3)
         
