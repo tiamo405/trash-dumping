@@ -23,38 +23,38 @@ pip install -r requirements.txt
 ## Visualization
 
 ![image](./img_files/trash_0001.gif)
-![image](./img_files/Walking_0000.gif)
+![image](./img_files/Normal_0000.gif)
 
 # Dataset
 ```
-trash   __videos        __ Walking        __video1.mp4
+trash   __videos        __ Normal        __video1.mp4
         |               |                |__video2.mp4  
         |               |                |__.....
-        |               |__ trashDumping  __video1.mp4
+        |               |__ Littering  __video1.mp4
         |                                |__video2.mp4  
         |                                |__.....   
-        |__label        __ Walking       __video1  __ frame11.txt
+        |__label        __ Normal       __video1  __ frame11.txt
         |               |               |         |__ frame12.txt
         |               |               |         |__ .....        
         |               |               |__video2   __ frame11.txt
         |               |               |          |__ frame12.txt
         |               |               |          |__ .....
         |               |               |__ .....
-        |               |__ trashDumping __video1 __ frame21.txt
+        |               |__ Littering __video1 __ frame21.txt
         |                               |         |__ frame22.txt
         |                               |         |__ .....        
         |                               |__video2   __ frame21.txt
         |                               |          |__ frame22.txt
         |                               |          |__ .....
         |                               |__ .....    
-        |__rgb-images    __ Walking     __video1   __ frame1.jpg
+        |__rgb-images    __ Normal     __video1   __ frame1.jpg
         |               |               |         |__ frame2.jpg
         |               |               |         |__ .....        
         |               |               |__video2   __ frame1.jpg
         |               |               |          |__ frame2.jpg
         |               |               |          |__ .....
         |               |               |__ .....
-        |               |__ trashDumping __video1  __ frame1.jpg
+        |               |__ Littering __video1  __ frame1.jpg
         |                                |         |__ frame2.jpg
         |                                |         |__ .....        
         |                                |__video2   __ frame1.jpg
@@ -71,10 +71,10 @@ You can download **Trash Dumping** from the following links:
 ## Custom data
 * Create folder labels, rgb-images
 ```Shell
-python extract_frame/video2frame.py --folder_videos trash/videos/Walking --label Walking
+python extract_frame/video2frame.py --folder_videos trash/videos/Normal --label Normal
 ```
 ```Shell
-python extract_frame/video2frame.py --folder_videos trash/videos/trashDumping --label trashDumping
+python extract_frame/video2frame.py --folder_videos trash/videos/Littering --label Littering
 ```
 * Create testlist.txt, trainlist.txt
 ```Shell
