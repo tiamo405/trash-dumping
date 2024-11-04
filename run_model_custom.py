@@ -132,11 +132,11 @@ def save_storage(frame, logger_cam):
         "camera_id": camera_id,
         "detect_timestamp": current_timesteamp,
         "violation_date" : date_timestamp,
-        "is_violation": "Unknown"
+        "is_violation": False
     }
     violation_image_id = mongo.insert_violation(new_detection)
     violation_image_id = str(violation_image_id)
-    logger_cam.info(f"New detected trashDumping id {violation_image_id}")
+    logger_cam.info(f"New detected Littering id {violation_image_id} at {current_timesteamp}")
     cv2.imwrite(f'temp_file/{violation_image_id}.jpg', frame)
     s3.upload_file(f'temp_file/{violation_image_id}.jpg', f'{violation_image_id}.jpg')
     os.remove(f'temp_file/{violation_image_id}.jpg') 
@@ -256,13 +256,13 @@ def detect(args, model, device, transform, class_names, class_colors):
                 # rescale
                 bboxes = rescale_bboxes(bboxes, [orig_w, orig_h])
                 # one hot
-                detections = []
+                detections = [] # chi luu class Littering
                 for i, bbox in enumerate(bboxes):
                     if scores[i] > args.vis_thresh:
                         x1, y1, x2, y2 = bbox
                         x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
                         label = int(labels[i])
-                        if label == 0: # chi tinh class trashDumping
+                        if label == 0: # chi tinh class Littering
                             score = scores[i]
                             detections.append([x1, y1, x2, y2, score])
                 if len(detections) > 0:
@@ -274,8 +274,8 @@ def detect(args, model, device, transform, class_names, class_colors):
                     left, top, right, bottom = box
                     track_id = track.track_id
                     frame_copy = deepcopy(frame)
-                    frame_copy = cv2.rectangle(frame_copy, (int(left), int(top)), (int(right), int(bottom)), class_colors["trashDumping"], 2)
-                    frame_copy = cv2.putText(frame_copy, f'id: {str(track_id)}', (int(left), int(top-10)), cv2.FONT_HERSHEY_SIMPLEX, 1.0, class_colors["trashDumping"], 1)
+                    frame_copy = cv2.rectangle(frame_copy, (int(left), int(top)), (int(right), int(bottom)), class_colors["Littering"], 2)
+                    frame_copy = cv2.putText(frame_copy, f'id: {str(track_id)}', (int(left), int(top-10)), cv2.FONT_HERSHEY_SIMPLEX, 1.0, class_colors["Littering"], 1)
                     # Kiểm tra xem có ID nào mới không
                     if track_id not in trash_ids:
                         # Thêm ID mới vào danh sách
@@ -337,8 +337,10 @@ if __name__ == '__main__':
     # class_colors = [(np.random.randint(255),
     #                  np.random.randint(255),
     #                  np.random.randint(255)) for _ in range(num_classes)]
-    class_colors = {"trashDumping": [0,0,255],
-                    "Walking": [0,255,0]}
+    class_colors = {
+        "Littering": [0,0,255],
+        "Normal": [0,255,0]
+        }
     # transform
     basetransform = BaseTransform(img_size=args.img_size)
 
