@@ -20,6 +20,12 @@ ERROR_RESPS = {
     401: ["FS.0401", "Error get history"],
     402: ["FS.0402", "Camera does not exist."],
       
+    # login
+    500: ["FS.0500", "Success login"],
+    501: ["FS.0501", "Error login"],
+    502: ["FS.0502", "User does not exist."],
+    503: ["FS.0503", "Password is incorrect."],
+    504: ["FS.0504", "User is not activated."],
 }
 
 
