@@ -1,5 +1,6 @@
 import threading
 import cv2
+import ffmpeg
 import numpy as np
 import time
 import os
@@ -16,7 +17,35 @@ import storage.mongo as mongo
 MongoDBManager = mongo.MongoDBManager()
 S3Minio = s3.S3Minio()
 
-
+def upload_file(out_filename, start_time, end_time, date_time, camData, logger_cam):
+    reencoded_filename = out_filename.replace('.avi', '_reencoded.mp4')
+    try:
+        ffmpeg.input(out_filename).output(
+            reencoded_filename, 
+            vcodec='libx264', 
+            preset='fast', 
+            movflags='+faststart', 
+            an=None
+        ).run(quiet = True)
+        print(f"Tái mã hóa video thành công: {reencoded_filename}")
+        os.remove(out_filename)
+        # save to MongoDB
+        video_data = {
+            "camera_id": str(camData['_id']),
+            "video_path": reencoded_filename,
+            "start_time": start_time,
+            "end_time": end_time,
+            "date_time": date_time
+        }
+        print(video_data)
+        MongoDBManager.insert_video(video_data)
+        S3Minio.upload_file(reencoded_filename, reencoded_filename, True)
+        print(f"Video {reencoded_filename} đã lưu xong.")
+        logger_cam.info(f"Video {reencoded_filename} đã lưu xong.")
+    except Exception as e:
+        logger_cam.error(f"Lỗi khi tái mã hóa video: {e}")
+        
+    
 def open_rtsp_camera(rtsp_url, logger_cam, retry_interval=5, max_retries=5, stop_cam = False):
     retries = 0
 
@@ -47,9 +76,10 @@ def main(camData, logger_cam, record_duration=300, overlap_time=30):
     # Kết nối tới RTSP stream
     cap = open_rtsp_camera(rtsp_url, logger_cam, stop_cam = False)
     fps = int(cap.get(cv2.CAP_PROP_FPS))
+    print(f"FPS: {fps}")
 
 
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    fourcc = cv2.VideoWriter_fourcc(*'MJPG')
 
     # Tính toán số frame cần ghi cho mỗi video và số frame cho đoạn trùng lặp
     total_frames_to_record = int(record_duration * fps)
@@ -61,7 +91,7 @@ def main(camData, logger_cam, record_duration=300, overlap_time=30):
         # Tạo đối tượng VideoWriter để ghi video
         start_time = start_time_tmp if start_time_tmp is not None else time_utils.get_current_timestamp() # Thời gian bắt đầu ghi video
         print(f"Start recording video at {start_time}")
-        out_filename = str(camData['_id']) + "_" + str(start_time) + '.mp4'
+        out_filename = str(camData['_id']) + "_" + str(start_time) + '.avi'
         out = cv2.VideoWriter(out_filename, fourcc, fps, (int(cap.get(3)), int(cap.get(4))))
 
         # Nếu có các frame trùng lặp từ video trước, ghi chúng vào video hiện tại
@@ -110,24 +140,10 @@ def main(camData, logger_cam, record_duration=300, overlap_time=30):
             overlap_frame_index += 1
 
         out.release()
-        
-        # save to MongoDB
-        video_data = {
-            "camera_id": str(camData['_id']),
-            "video_path": out_filename,
-            "start_time": start_time,
-            "end_time": time_utils.get_current_timestamp(),
-            "date_time": time_utils.get_date_timestamp()
-        }
-        print(video_data)
-        MongoDBManager.insert_video(video_data)
-        
-        # Upload to S3 in a separate thread
-        s3_thread = threading.Thread(target=S3Minio.upload_file, args=(out_filename, out_filename, True))
-        s3_thread.start()
-        
-        print(f"Video {out_filename} đã lưu xong.")
-        logger_cam.info(f"Video {out_filename} đã lưu xong.")
+        end_time = time_utils.get_current_timestamp()
+        date_time = time_utils.get_date_timestamp()
+        upload_thread = threading.Thread(target=upload_file, args=(out_filename, start_time, end_time, date_time, camData, logger_cam))
+        upload_thread.start()
 
 if __name__ == "__main__":
     # Địa chỉ RTSP của camera
@@ -137,4 +153,4 @@ if __name__ == "__main__":
         exit(1)
     camid = str(camData['_id'])
     logger_cam = setup_logger(f"record_cam_{camid}.log")
-    main(camData = camData, logger_cam = logger_cam)
+    main(camData = camData, logger_cam = logger_cam, record_duration=300, overlap_time=30)
