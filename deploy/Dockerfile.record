@@ -1,0 +1,9 @@
+FROM littering:0.1-base
+
+# Thiết lập thư mục làm việc
+WORKDIR /workspace
+
+# Sao chép tất cả các tệp từ thư mục hiện tại của dự án vào thư mục /app trên container
+COPY . /workspace
+
+CMD ["bash", "script/record.sh"]

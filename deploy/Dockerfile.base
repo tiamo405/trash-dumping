@@ -7,16 +7,21 @@ WORKDIR /workspace
 # Sao chép file requirements.txt vào thư mục làm việc
 COPY requirements.txt .
 
+# install ffmpeg
+RUN apt-get update && apt-get install -y ffmpeg
+
 #update pip
 RUN pip install --upgrade pip
 
-# install opencv
+# # # Cài đặt các phụ thuộc từ tệp requirements.txt
+RUN pip install -r requirements.txt
 
+# # # install opencv
 RUN pip3 install opencv-python-headless==4.5.3.56
 
+# # # install pytorch-cpu
+RUN pip install torch==1.13.1+cpu torchvision==0.14.1+cpu torchaudio==0.13.1 --extra-index-url https://download.pytorch.org/whl/cpu
 
-# Cài đặt các phụ thuộc từ tệp requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
 
 # RUN apt-get update && apt-get install -y curl wget
 

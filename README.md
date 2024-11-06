@@ -125,18 +125,35 @@ or you can just run the script:
 bash demo_trash.sh
 ```
 # docker
-# image base
+## image base
 ```sh
 docker build -t littering:0.1-base -f deploy/Dockerfile.base .
 ```
-# run
+## image AI
+```sh
+docker build -t littering:latest -f deploy/Dockerfile.camAI .
+```
+## image record
+```sh
+docker build -t recording:latest -f deploy/Dockerfile.record .
+```
+## run camAI
 ```sh
 docker run --rm --name dev --ipc=host --net=host -dit --privileged \
 -e VIDEO_PATH='rtsp://cxview:gs252525@113.161.58.13:554/Streaming/Channels/701' \
--v /home/namtp/Desktop/code/trash-dumping:/workspace \
-python:3.9-slim
+-v /home/server/namtp/code/trash-dumping:/workspace \
+littering:latest
 ```
-## Note
+## run record cam
+```sh
+docker run --rm --name dev --ipc=host --net=host -dit --privileged \
+-e VIDEO_PATH='rtsp://cxview:gs252525@113.161.58.13:554/Streaming/Channels/701' \
+-v /home/server/namtp/code/trash-dumping:/workspace \
+-u 1000:1000 \
+recording:latest
+```
+
+# Note
 ```
 Author  : Tran Phuong Nam
 Contact : nam05052002@gmail.com
