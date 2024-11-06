@@ -142,11 +142,12 @@ if __name__ == "__main__":
     mongo_manager = MongoDBManager()
 
     new_camera = {
-        "rtsp_cam": 'test_model/video_test/2.mp4',
+        "rtsp_cam": 'test 2',
         "is_activate": True,
         "date_added": int(datetime.utcnow().timestamp()),
         "location": "video test 1",
         "add_by_customer_id": "671b0c1be9383de32aefd299",
+        "origin_image": "test_model/video_test/1.jpg"
     }
     id = mongo_manager.insert_camera(new_camera)
     print(id)
@@ -159,16 +160,16 @@ if __name__ == "__main__":
     # id = mongo_manager.insert_role(new_role)
     # print(id)
 
-    new_account = {
-        "username": "admin",
-        "password": "admin",
-        "email": "admin@gmail.com",
-        "dob": "01/01/2000",
-        "phoneNumber": "0123456789",
-        "full_name": "tran nam",
-        "date_create": datetime.utcnow().timestamp(),
-        "role": str('671b0a215ebeec220d445bf7')
-    }
+    # new_account = {
+    #     "username": "admin",
+    #     "password": "admin",
+    #     "email": "admin@gmail.com",
+    #     "dob": "01/01/2000",
+    #     "phoneNumber": "0123456789",
+    #     "full_name": "tran nam",
+    #     "date_create": datetime.utcnow().timestamp(),
+    #     "role": str('671b0a215ebeec220d445bf7')
+    # }
     # id = mongo_manager.insert_account(new_account)
     # print(id)
     # find_camera = mongo_manager.get_camera_by_rtsp('test_model/video_test/2.mp4')

@@ -148,47 +148,66 @@ logg.debug('debug')
 #                 an=None
 #             ).run(quiet = True)
 #             print(f"Tái mã hóa video thành công: {reencoded_filename}")
-#             os.remove(video_path)
-#             # update video to mongo and s3
-#             video["video_path"] = reencoded_filename
-#             mongo_manager.collection_video.update_one({"_id": video["_id"]}, {"$set": video})
-#             s3.upload_file(file_path=reencoded_filename, object_name=reencoded_filename, is_remove=True)
+#             # os.remove(video_path)
+#             # # update video to mongo and s3
+#             # video["video_path"] = reencoded_filename
+#             # mongo_manager.collection_video.update_one({"_id": video["_id"]}, {"$set": video})
+#             # s3.upload_file(file_path=reencoded_filename, object_name=reencoded_filename, is_remove=True)
 #         except Exception as e:
-            
+#             print(f"Lỗi khi tái mã hóa video: {e}")
 #             continue
 
-from storage.mongo import MongoDBManager
-from storage.s3_minio import S3Minio
-from bson import ObjectId
-mongo_manager = MongoDBManager()
-s3 = S3Minio()
+# from storage.mongo import MongoDBManager
+# from storage.s3_minio import S3Minio
+# from bson import ObjectId
+# mongo_manager = MongoDBManager()
+# s3 = S3Minio()
 
-def get_history_video(id_image_violation: str , page: int = 1, limit: int = 10):
-    image_data = mongo_manager.collection_violation_image.find_one({"_id": ObjectId(id_image_violation)})
-    camera_id = image_data["camera_id"]
-    date_violation = image_data["violation_date"]
-    detect_timestamp = image_data["detect_timestamp"]
-    # get all video in date camera
-    all_videos = list(mongo_manager.collection_video.find({"camera_id": camera_id, "date_time": date_violation}))
-    # phan trang
-    # start_index = (page - 1) * limit
-    # end_index = start_index + limit
-    # paginated_data = all_videos[start_index:end_index]
+# def get_history_video(id_image_violation: str , page: int = 1, limit: int = 10):
+#     image_data = mongo_manager.collection_violation_image.find_one({"_id": ObjectId(id_image_violation)})
+#     camera_id = image_data["camera_id"]
+#     date_violation = image_data["violation_date"]
+#     detect_timestamp = image_data["detect_timestamp"]
+#     # get all video in date camera
+#     all_videos = list(mongo_manager.collection_video.find({"camera_id": camera_id, "date_time": date_violation}))
+#     # phan trang
+#     # start_index = (page - 1) * limit
+#     # end_index = start_index + limit
+#     # paginated_data = all_videos[start_index:end_index]
     
-    video_violations = []
-    for video in all_videos:
-        start_time = video["start_time"]
-        end_time = video["end_time"]
-        if str(video['_id']) == "6724939eb080eb3bccfe1eb4":
-            print(video)
-        if detect_timestamp >= start_time and detect_timestamp <= end_time:
-            video["_id"] = str(video["_id"])
-            video["url_video"] = s3.geturl(video["video_path"])
-            video_violations.append(video)
-    totalPage = len(video_violations) // limit + 1
-    print(video_violations)
-get_history_video("6724925600a13dc48251d2f4")
+#     video_violations = []
+#     for video in all_videos:
+#         start_time = video["start_time"]
+#         end_time = video["end_time"]
+#         if str(video['_id']) == "6724939eb080eb3bccfe1eb4":
+#             print(video)
+#         if detect_timestamp >= start_time and detect_timestamp <= end_time:
+#             video["_id"] = str(video["_id"])
+#             video["url_video"] = s3.geturl(video["video_path"])
+#             video_violations.append(video)
+#     totalPage = len(video_violations) // limit + 1
+#     print(video_violations)
+# get_history_video("6724925600a13dc48251d2f4")
 # image = mongo_manager.collection_violation_image.find_one({"_id": ObjectId("6724925600a13dc48251d2f4")})
 # print(image)
 # video = mongo_manager.collection_video.find_one({"_id": ObjectId("6724939eb080eb3bccfe1eb4")})
 # print(video)
+
+# import ffmpeg
+
+# video = "/workspace/671b0ca3b236731f0056e606_1730777028.avi"
+# encode_path = video.replace('.avi', '_reencoded.mp4')
+# try:
+#     ffmpeg.input(video).output(
+#         encode_path, 
+#         vcodec='libx264', 
+#         preset='fast', 
+#         movflags='+faststart', 
+#         an=None
+#     ).run(quiet = True)
+#     print(f"Tái mã hóa video thành công: {encode_path}")
+# except Exception as e:
+#     print(f"Lỗi khi tái mã hóa video: {e}")
+
+import uuid
+print(str(uuid.uuid4().hex))
