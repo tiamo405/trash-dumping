@@ -124,7 +124,7 @@ def multi_hot_vis(args, frame, out_bboxes, orig_w, orig_h, class_names, act_pose
 
 def save_storage(frame, logger_cam):
     current_timesteamp = time_utils.get_current_timestamp()
-    date_timestamp = time_utils.get_date_timestamp()
+    date_timestamp = time_utils.get_midnight_timestamp_gmt7()
     camera = mongo.get_camera_by_rtsp(VIDEO_PATH)
     camera_id = str(camera['_id'])
     # save mongo

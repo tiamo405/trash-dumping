@@ -141,7 +141,7 @@ def main(camData, logger_cam, record_duration=300, overlap_time=30):
 
         out.release()
         end_time = time_utils.get_current_timestamp()
-        date_time = time_utils.get_date_timestamp()
+        date_time = time_utils.get_midnight_timestamp_gmt7()
         upload_thread = threading.Thread(target=upload_file, args=(out_filename, start_time, end_time, date_time, camData, logger_cam))
         upload_thread.start()
 

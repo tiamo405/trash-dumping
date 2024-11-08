@@ -113,7 +113,7 @@ def vis_detection(frame, scores, labels, bboxes, vis_thresh, class_names, class_
         
 def save_storage(frame):
     timesteamp = time_utils.get_current_timestamp()
-    date_timestamp = time_utils.get_date_timestamp()
+    date_timestamp = time_utils.get_midnight_timestamp_gmt7()
     camera = mongo.get_camera_by_rtsp(VIDEO_PATH)
     camera_id = str(camera['_id'])
     # save mongo
