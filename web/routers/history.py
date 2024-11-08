@@ -1,13 +1,19 @@
+import math
 import os, sys
 
 from bson import ObjectId
 root = os.getcwd()
 sys.path.append(root)
 from ..utils.Respones import *
+from web.routers import verify_token
 from storage.mongo import MongoDBManager
 from storage.s3_minio import S3Minio
 from fastapi import APIRouter, Depends, HTTPException, Form
 from pydantic import BaseModel
+from fastapi.security import OAuth2PasswordBearer
+
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 view_router = APIRouter(prefix="/prod/api/v1/view", tags=["history"])
 mongo_manager = MongoDBManager()
@@ -18,9 +24,10 @@ class imageViolation(BaseModel):
     is_violation: bool = False
 
 @view_router.get("/get_history")
-async def get_history(rtsp_url: str , date: int  , page: int = 1, limit: int = 10):
+async def get_history(rtsp_url: str , date: int  , page: int = 1, limit: int = 10, username: str = Depends(verify_token)):
     try:
         camera = mongo_manager.get_camera_by_rtsp(rtsp_url)
+        print(date)
         if not camera:
             return Response(402, error_resp=402)
         else:
@@ -30,7 +37,7 @@ async def get_history(rtsp_url: str , date: int  , page: int = 1, limit: int = 1
             start_index = (page - 1) * limit
             end_index = start_index + limit
             paginated_data = violation_images[start_index:end_index]
-            totalPage = len(violation_images) // limit + 1
+            totalPage = math.ceil(len(violation_images) / limit)
             for violation in paginated_data:
                 violation["_id"] = str(violation["_id"])
                 violation["url_image"] = s3.geturl(violation["_id"] + ".jpg")
@@ -40,7 +47,7 @@ async def get_history(rtsp_url: str , date: int  , page: int = 1, limit: int = 1
         return Response(1, error_resp=1, msg = str(e))
     
 @view_router.get("/get_history_video_violation")
-async def get_history_video(id_image_violation: str , page: int = 1, limit: int = 10):
+async def get_history_video(id_image_violation: str , page: int = 1, limit: int = 10, username: str = Depends(verify_token)):
     try:
         image_data = mongo_manager.collection_violation_image.find_one({"_id": ObjectId(id_image_violation)})
         camera_id = image_data["camera_id"]
@@ -60,14 +67,14 @@ async def get_history_video(id_image_violation: str , page: int = 1, limit: int 
         start_index = (page - 1) * limit
         end_index = start_index + limit
         paginated_data = video_violations[start_index:end_index]
-        totalPage = len(video_violations) // limit + 1
+        totalPage = math.ceil(len(video_violations) / limit)
         return Response(200, entities={"videos": paginated_data, "page": page, "limit": limit, "totalPage": totalPage})
     except Exception as e:
         Response(1, error_resp=1, msg = str(e))
 
 # get all violation has is_violation = True
 @view_router.get("/get_all_violation")
-async def get_all_violation(location : str = '', is_violation : bool = True , page: int = 1, limit: int = 10):
+async def get_all_violation(location : str = '', is_violation : bool = True , page: int = 1, limit: int = 10, username: str = Depends(verify_token)):
     try:
 
         if location is None or location == '' :
@@ -81,7 +88,8 @@ async def get_all_violation(location : str = '', is_violation : bool = True , pa
         start_index = (page - 1) * limit
         end_index = start_index + limit
         paginated_data = violation_images[start_index:end_index]
-        totalPage = len(violation_images) // limit + 1
+        # fix phan trang
+        totalPage = math.ceil(len(violation_images) / limit)
         for violation in paginated_data:
             violation["_id"] = str(violation["_id"])
             violation["url_image"] = s3.geturl(violation["_id"] + ".jpg")
@@ -98,7 +106,7 @@ async def get_all_violation(location : str = '', is_violation : bool = True , pa
 # set is_violation = True or False
 @view_router.post("/set_violation")
 # async def set_violation(id_image: str , is_violation: bool):
-async def set_violation(imageRequest: imageViolation):
+async def set_violation(imageRequest: imageViolation, username: str = Depends(verify_token)):
     try:
         violation = mongo_manager.collection_violation_image.find_one({"_id": ObjectId(imageRequest.image_id)})
         violation["is_violation"] = imageRequest.is_violation
@@ -109,7 +117,7 @@ async def set_violation(imageRequest: imageViolation):
 
 # delete violation_image
 @view_router.delete("/delete_violation")
-async def delete_violation(id_image: str):
+async def delete_violation(id_image: str, username: str = Depends(verify_token)):
     try:
         violation = mongo_manager.collection_violation_image.find_one({"_id": ObjectId(id_image)})
         if not violation:
