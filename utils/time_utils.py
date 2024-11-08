@@ -1,4 +1,4 @@
-from datetime import datetime, time, timedelta
+from datetime import datetime, time, timedelta, timezone
 import pytz
 
 # Múi giờ Việt Nam (GMT+7)
@@ -29,7 +29,19 @@ def get_date_timestamp():
 def get_datetime():
     return datetime.now()
 
+def get_midnight_timestamp_gmt7():
+    # Lấy thời gian hiện tại
+    now = datetime.now(timezone.utc) + timedelta(hours=7)
+    
+    # Đặt thời gian về 00:00:00 của ngày hiện tại theo GMT+7
+    vietnam_midnight = datetime(now.year, now.month, now.day, 0, 0, 0, tzinfo=timezone(timedelta(hours=7)))
+    
+    # Trả về timestamp của thời gian này
+    return int(vietnam_midnight.timestamp())
+
 if '__main__' == __name__:
     print(get_date_timestamp())
-    print(datetime.combine(datetime.now().date(), time(0, 0, 0)).timestamp())
-    print(datetime.now())
+    # print(datetime.combine(datetime.now().date(), time(0, 0, 0)).timestamp())
+    # print(datetime.now())
+    print(get_midnight_timestamp_gmt7())
+    
