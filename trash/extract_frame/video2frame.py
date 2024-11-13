@@ -54,10 +54,10 @@ class Preprocessing :
 
 def get_opt():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dir_data', type=str, default= 'trash/New_video')
+    parser.add_argument('--dir_data', type=str, default= 'trash/video/Webcam')
     parser.add_argument('--label', type=str, default='None')
     parser.add_argument('--weight_yolo', type= str, default='checkpoints/yolov5nu.pt')
-    parser.add_argument('--dir_save', type= str, default='trash/extract_frame')
+    parser.add_argument('--dir_save', type= str, default='trash/predata')
     opt = parser.parse_args()
     return opt
 if __name__ == "__main__":

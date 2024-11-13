@@ -82,7 +82,30 @@ def build_split_data(raw_data) :
 #                 path_file = path_file.replace('.jpg','.txt')
 #                 if path_file not in file_txts :
 #                     os.remove(file)
-    
+
+# chang label 0-> 1 for littering and 0 -> 2 for normal
+def change_label(raw_data):
+    labels = os.listdir(os.path.join(raw_data, 'labels'))
+    for label in labels :
+        print('Start change label: ', label)
+        dir_labels = os.path.join(raw_data, 'labels', label)
+        folder_labels = sorted(list(glob.glob(f"{dir_labels}/*")))
+        for folder_label in folder_labels:
+            print('start change folder: ', folder_label)
+            file_txts = list(glob.glob(f"{folder_label}/*"))
+            for file in file_txts :
+                with open(file, 'r') as f:
+                    lines = f.readlines()
+                f.close()
+                with open(file, 'w') as f:
+                    for line in lines:
+                        if label == 'Normal':
+                            line = line.replace('0', '2')
+                        else:
+                            line = line.replace('0', '1')
+                        f.write(line)
+                f.close()
+    print('{} analysis done'.format(raw_data))    
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Build file list')
@@ -95,5 +118,6 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    build_split_data(args.raw_data)
+    # build_split_data(args.raw_data)
     # remove_images(args.raw_data)
+    change_label(args.raw_data)
