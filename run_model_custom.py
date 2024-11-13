@@ -312,6 +312,7 @@ if __name__ == '__main__':
     np.random.seed(100)
     args = parse_args()
     args.video = VIDEO_PATH
+    os.makedirs('temp_file', exist_ok=True)
     cam_data = mongo.get_camera_by_rtsp(VIDEO_PATH)
     if cam_data is None:
         print(f"Không tìm thấy camera với RTSP URL: {VIDEO_PATH}")
