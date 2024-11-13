@@ -8,7 +8,7 @@ WORKDIR /workspace
 COPY requirements.txt .
 
 # install ffmpeg
-RUN apt-get update && apt-get install -y ffmpeg
+RUN apt-get update && apt-get -y upgrade && apt-get install -y ffmpeg
 
 #update pip
 RUN pip install --upgrade pip
