@@ -141,23 +141,20 @@ docker build -t recording:latest -f deploy/Dockerfile.record .
 ```sh
 docker run --rm --name dev --ipc=host --net=host -dit --privileged \
 -e VIDEO_PATH='rtsp://cxview:gs252525@203.210.209.46:554/Streaming/Channels/401' \
--v /home/server/namtp/code/trash-dumping:/workspace \
 littering:0.1-base
 ```
 ## run camAI
 ```sh
 docker run --name ai_672c90829f49513612a30528 --ipc=host --net=host -dit --privileged \
 -e VIDEO_PATH='rtsp://cxview:gs252525@203.210.209.46:554/Streaming/Channels/401' \
--v /home/server/namtp/code/trash-dumping:/workspace \
---cpus=10 \
+--cpus=5 \
 littering:latest
 ```
 ## run record cam
 ```sh
 docker run --name recording_672c90829f49513612a30528 --ipc=host --net=host -dit --privileged \
 -e VIDEO_PATH='rtsp://cxview:gs252525@203.210.209.46:554/Streaming/Channels/401' \
--v /home/server/namtp/code/trash-dumping:/workspace \
---cpus="5" \
+--cpus=5 \
 recording:latest
 ```
 
