@@ -56,17 +56,16 @@ class SequenceDataset(Dataset):
         self.num_samples = len(self.file_names)
 
     def __len__(self):
-        return len(self.num_samples)
+        return self.num_samples
     
     def __getitem__(self, index):
         assert index <= len(self), 'index range error'
-        image_path = self.file_names[index].rstrip()
-        img_split = image_path.split('/')
+
+        label_path = self.file_names[index].rstrip()
+        img_split = label_path.split('/')
         img_id = int(img_split[-1][:5])
-        # path to label
-        label_path = os.path.join(self.data_root, img_split[0], img_split[1], img_split[2], '{:05d}.txt'.format(img_id))
         # image folder
-        img_folder = os.path.join(self.data_root, 'rgb-images', img_split[1], img_split[2])
+        img_folder = os.path.join(self.root_path, 'rgb-images', img_split[1], img_split[2])
         max_num = len(os.listdir(img_folder))
         d = self.sampling_rate
         video_clip = []
@@ -78,7 +77,7 @@ class SequenceDataset(Dataset):
             elif img_id_temp > max_num:
                 img_id_temp = max_num
             path_tmp = os.path.join(self.root_path, 'rgb-images', img_split[1], img_split[2], '{:05d}.jpg'.format(img_id_temp))
-            path_tmp_fail = os.path.join(self.data_root, 'rgb-images', img_split[1], img_split[2] ,'{:05d}.jpg'.format(img_id))
+            path_tmp_fail = os.path.join(self.root_path, 'rgb-images', img_split[1], img_split[2] ,'{:05d}.jpg'.format(img_id))
             try:
                 img = cv2.imread(path_tmp)
                 feature = self.feature_extractor.extract_img(img)
@@ -92,23 +91,11 @@ class SequenceDataset(Dataset):
 
         return torch.tensor(features, dtype=torch.float32), torch.tensor(label, dtype=torch.long)
 
-feature_extractor = FeatureExtractor()
 # read dataset
-root_path = "trash"
-labels = ["Littering", "Normal"]
-image_sequences = []
-label_sequences = []
-for label in labels:
-    folder_videos = os.path.join(root_path, 'rgb-images', label)
-    videos = os.listdir(folder_videos)
-    for video in videos:
-        folder_images = os.path.join(folder_videos, video)
-        images = os.listdir(folder_images)
-        image_sequences.append([os.path.join(folder_images, img) for img in images])
-        label_sequences.append(labels.index(label))
-    
-train_dataset = SequenceDataset(train_image_sequences, feature_extractor)
-test_dataset = SequenceDataset(test_image_sequences, feature_extractor)
+listtext_train = 'trainlist.txt'
+listtext_test = 'testlist.txt'
+train_dataset = SequenceDataset(listtext_train)
+test_dataset = SequenceDataset(listtext_test)
 
 train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False)
@@ -127,7 +114,7 @@ class LSTMModel(nn.Module):
 
 input_size = 2048  # Dựa trên ResNet50 output
 hidden_size = 128
-output_size = num_classes
+output_size = 2
 
 model = LSTMModel(input_size, hidden_size, output_size)
 criterion = nn.CrossEntropyLoss()
