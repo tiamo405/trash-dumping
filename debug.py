@@ -38,6 +38,8 @@
 # video_writer.release()
 # cv2.destroyAllWindows()
 
+import cv2
+import numpy as np
 from logs import setup_logger
 
 logg = setup_logger('test', debug=True)
@@ -211,3 +213,28 @@ logg.debug('debug')
 
 import uuid
 print(str(uuid.uuid4().hex))
+
+label = '/home/server/namtp/code/trash-dumping/trash/predata/labels/None/VID_20230310_163540-00001/00040.txt'
+pathimg = label.replace('.txt', '.jpg').replace('labels', 'rgb-images')
+
+boxs = np.loadtxt(label)
+print(boxs)
+img = cv2.imread(pathimg)
+left, top, right, bottom = int(boxs[1]), int(boxs[1]), int(boxs[3]), int(boxs[4])
+cv2.rectangle(img, (left, 0), (right, bottom), (0, 255, 0), 2)
+cv2.imwrite('d.jpg', img)
+for i in range(1, len(boxs)):
+    if boxs[i] < 0 :
+        boxs[i] = 0
+#save boxs to label cach 1 dau cach
+boxs[1:] = np.round(boxs[1:])
+print(boxs)
+with open('text.txt', 'w') as f:
+    # Lưu phần tử đầu tiên (không có phần thập phân)
+    f.write(f"{boxs[0]:.0f}")
+    
+    # Lưu các phần tử còn lại với một chữ số thập phân
+    for value in boxs[1:]:
+        f.write(f" {value:.1f}")
+
+

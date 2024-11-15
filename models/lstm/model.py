@@ -77,15 +77,12 @@ class SequenceDataset(Dataset):
             elif img_id_temp > max_num:
                 img_id_temp = max_num
             path_tmp = os.path.join(self.root_path, 'rgb-images', img_split[1], img_split[2], '{:05d}.jpg'.format(img_id_temp))
-            path_tmp_fail = os.path.join(self.root_path, 'rgb-images', img_split[1], img_split[2] ,'{:05d}.jpg'.format(img_id))
-            try:
-                img = cv2.imread(path_tmp)
-                feature = self.feature_extractor.extract_img(img)
-            except:
-                img = cv2.imread(path_tmp_fail)
-                feature = self.feature_extractor.extract_img(img)
+            img = cv2.imread(path_tmp)
+            bbox = np.loadtxt(label_path)
+            left, top, right, bottom = int(bbox[1]), int(bbox[2]), int(bbox[3]), int(bbox[4])
+            img_person = img[top:bottom, left:right]
+            feature = self.feature_extractor.extract_img(img_person)
             features.append(feature)
-
 
         label = 0 if 'Normal' in label_path else 1
 
@@ -120,18 +117,43 @@ model = LSTMModel(input_size, hidden_size, output_size)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-# Train loop
+# Số lượng epoch
 epochs = 10
+
 for epoch in range(epochs):
     model.train()
+    total_loss = 0
+    correct = 0
+    total = 0
+    
     for features, labels in train_loader:
         optimizer.zero_grad()
         outputs = model(features)
         loss = criterion(outputs, labels)
+        
+        # Tính toán độ chính xác (accuracy)
+        _, predicted = torch.max(outputs.data, 1)
+        correct += (predicted == labels).sum().item()
+        total += labels.size(0)
+        
+        # Cộng dồn loss cho epoch
+        total_loss += loss.item()
+        
+        # Cập nhật gradient và tối ưu hóa
         loss.backward()
         optimizer.step()
     
-    print(f"Epoch [{epoch+1}/{epochs}], Loss: {loss.item():.4f}")
+    # Tính toán loss và accuracy trung bình cho epoch
+    avg_loss = total_loss / len(train_loader)
+    accuracy = 100 * correct / total
+
+    print(f"Epoch [{epoch+1}/{epochs}], Loss: {avg_loss:.4f}, Accuracy: {accuracy:.2f}%")
+    # Lưu trọng số của mô hình sau mỗi epoch (hoặc ở epoch cuối)
+    if os.path.isdir("checkpoints/lstm") == False:
+        os.makedirs("checkpoints/lstm")
+    checkpoint_path = f"checkpoints/lstm/model_weights_epoch_{epoch+1}.pth"
+    torch.save(model.state_dict(), checkpoint_path)
+    print(f"Saved model weights at {checkpoint_path}")
 
 # Đánh giá mô hình
 model.eval()

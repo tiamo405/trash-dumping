@@ -59,7 +59,7 @@ def build_split_data(raw_data) :
         train_video, test_video = fvideos[:n_train], fvideos[n_train:]
         create_txt(raw_data= raw_data, label= label, arr_videos= train_video, file_txt= train_file_txt)
         create_txt(raw_data= raw_data, label= label, arr_videos= test_video, file_txt= test_file_txt)
-    print('{} analysis done'.format(raw_data))
+    print('{} analysis split data done'.format(raw_data))
 
 
 # def remove_images(raw_data):
@@ -94,17 +94,20 @@ def change_label(raw_data):
             print('start change folder: ', folder_label)
             file_txts = list(glob.glob(f"{folder_label}/*"))
             for file in file_txts :
-                with open(file, 'r') as f:
-                    lines = f.readlines()
-                f.close()
+                boxs = np.loadtxt(file)
+                if label == 'Normal':
+                    boxs[0] = 2
+                else:
+                    boxs[0] = 1
+                for i in range(1, len(boxs)):
+                    if boxs[i] < 0 :
+                        boxs[i] = 0
+                boxs = np.round(boxs)
                 with open(file, 'w') as f:
-                    for line in lines:
-                        if label == 'Normal':
-                            line = line.replace('0', '2')
-                        else:
-                            line = line.replace('0', '1')
-                        f.write(line)
-                f.close()
+                    f.write(f"{boxs[0]:.0f}")
+                    for value in boxs[1:]:
+                        f.write(f" {value:.1f}")
+
     print('{} analysis done'.format(raw_data))    
 
 def parse_args():
@@ -118,6 +121,6 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    # build_split_data(args.raw_data)
+    build_split_data(args.raw_data)
     # remove_images(args.raw_data)
-    change_label(args.raw_data)
+    # change_label(args.raw_data)
