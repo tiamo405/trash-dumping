@@ -54,7 +54,7 @@ def parse_args():
                         help='batch size on a single GPU.')
     parser.add_argument('-tbs', '--test_batch_size', default=16, type=int, 
                         help='test batch size on a single GPU.')
-    parser.add_argument('-accu', '--accumulate', default=1, type=int, 
+    parser.add_argument('-accu', '--accumulate', default=16, type=int, 
                         help='gradient accumulate.')
     parser.add_argument('-lr', '--base_lr', default=0.0001, type=float, 
                         help='base lr.')
@@ -64,7 +64,7 @@ def parse_args():
     # Epoch
     parser.add_argument('--max_epoch', default=10, type=int, 
                         help='max epoch.')
-    parser.add_argument('--lr_epoch', nargs='+', default=[2,3,4], type=int,
+    parser.add_argument('--lr_epoch', nargs='+', default=[2,3,4,5], type=int,
                         help='lr epoch to decay')
 
     # Model
@@ -78,7 +78,7 @@ def parse_args():
                         help='NMS threshold. We suggest 0.5 for UCF24 and AVA.')
     parser.add_argument('--topk', default=40, type=int,
                         help='topk prediction candidates.')
-    parser.add_argument('-K', '--len_clip', default=16, type=int,
+    parser.add_argument('-K', '--len_clip', default=8, type=int,
                         help='video clip length.')
     parser.add_argument('--freeze_backbone_2d', action="store_true", default=False,
                         help="freeze 2D backbone.")
@@ -90,11 +90,11 @@ def parse_args():
     #                     help="file args config")
 
     # Dataset
-    parser.add_argument('-d', '--dataset', default='ucf24',
+    parser.add_argument('-d', '--dataset', default='trash',
                         help='ucf24, ava_v2.2, trash')
     parser.add_argument('--root', default='.',
                         help='data root')
-    parser.add_argument('--num_workers', default=4, type=int, 
+    parser.add_argument('--num_workers', default=2, type=int, 
                         help='Number of workers used in dataloading')
 
     # Matcher

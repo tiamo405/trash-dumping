@@ -61,10 +61,11 @@ class SequenceDataset(Dataset):
     def __getitem__(self, index):
         assert index <= len(self), 'index range error'
 
-        label_path = self.file_names[index].rstrip()
-        img_split = label_path.split('/')
+        txt_path = self.file_names[index].rstrip()
+        img_split = txt_path.split('/')
         img_id = int(img_split[-1][:5])
         # image folder
+        label_path = os.path.join(self.root_path, img_split[0], img_split[1], img_split[2], '{:05d}.txt'.format(img_id))
         img_folder = os.path.join(self.root_path, 'rgb-images', img_split[1], img_split[2])
         max_num = len(os.listdir(img_folder))
         d = self.sampling_rate
@@ -78,6 +79,7 @@ class SequenceDataset(Dataset):
                 img_id_temp = max_num
             path_tmp = os.path.join(self.root_path, 'rgb-images', img_split[1], img_split[2], '{:05d}.jpg'.format(img_id_temp))
             img = cv2.imread(path_tmp)
+            
             bbox = np.loadtxt(label_path)
             left, top, right, bottom = int(bbox[1]), int(bbox[2]), int(bbox[3]), int(bbox[4])
             img_person = img[top:bottom, left:right]

@@ -26,4 +26,4 @@ python train.py \
         -ldr 0.5 \
         --batch_size 2 \
         -accu 16 \
-        -len_clip 4
+        --len_clip 8

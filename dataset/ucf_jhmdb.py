@@ -112,17 +112,13 @@ class UCF_JHMDB_Dataset(Dataset):
             
             elif self.dataset == 'trash':
                 path_tmp = os.path.join(self.data_root, 'rgb-images', img_split[1], img_split[2] ,'{:05d}.jpg'.format(img_id_temp))
-                path_tmp_fail = os.path.join(self.data_root, 'rgb-images', img_split[1], img_split[2] ,'{:05d}.jpg'.format(img_id))
             
             elif self.dataset == 'jhmdb21':
                 path_tmp = os.path.join(self.data_root, 'rgb-images', img_split[1], img_split[2] ,'{:05d}.png'.format(img_id_temp))
             
             # read image
             frame = Image.open(path_tmp).convert('RGB')
-            try:
-                frame = Image.open(path_tmp).convert('RGB')
-            except :
-                frame = Image.open(path_tmp_fail).convert('RGB')
+
             ow, oh = frame.width, frame.height
 
             # Neu id frame k ton tai thi frame mau den
