@@ -21,9 +21,9 @@ from utils.solver.warmup_schedule import build_warmup
 from config import build_dataset_config, build_model_config
 from models import build_model
 from utils.args import save_args, read_args
-
+from logs import setup_logger
 GLOBAL_SEED = 42
-
+train_logger = setup_logger("train_logger")
 
 def parse_args():
     parser = argparse.ArgumentParser(description='YOWOv2')
@@ -337,6 +337,8 @@ def print_log(lr, epoch, max_epoch, iter_i, epoch_size, loss_dict, time, accumul
 
     # print log infor
     print(log, flush=True)
+    train_logger.info(log)
+
 
 
 if __name__ == '__main__':

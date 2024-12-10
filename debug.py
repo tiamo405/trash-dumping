@@ -238,15 +238,79 @@ print(str(uuid.uuid4().hex))
 #     for value in boxs[1:]:
 #         f.write(f" {value:.1f}")
 
-labels = ['Normal', 'Littering']
-raw_data = '/home/server/namtp/code/trash-dumping/trash/'
-for label in labels:
-    fvideos = os.listdir(os.path.join(raw_data, 'labels', label))
-    for fvideo in fvideos:
-        print(fvideo)
-        txts_file = os.listdir(os.path.join(raw_data, 'labels', label, fvideo))
-        for txt_file in txts_file:
-            bbox = np.loadtxt(os.path.join(raw_data, 'labels', label, fvideo, txt_file))
-            print(bbox)
-            
+# labels = ['Normal', 'Littering']
+# raw_data = '/home/server/namtp/code/trash-dumping/trash/'
+# for label in labels:
+#     fvideos = os.listdir(os.path.join(raw_data, 'labels', label))
+#     for fvideo in fvideos:
+#         print(fvideo)
+#         txts_file = os.listdir(os.path.join(raw_data, 'labels', label, fvideo))
+#         for txt_file in txts_file:
+#             bbox = np.loadtxt(os.path.join(raw_data, 'labels', label, fvideo, txt_file))
+#             print(bbox)
 
+
+#-----------------------------------------------------------------------------------------
+# i have 1 camera rtsp, i want to record video from this camera 30s and save to local
+# import cv2
+# import time
+# import datetime
+
+# def save_rtsp_video(rtsp_url, output_dir, segment_duration=30):
+#     # Kết nối camera RTSP
+#     cap = cv2.VideoCapture(rtsp_url)
+    
+#     if not cap.isOpened():
+#         print("Không thể kết nối với camera.")
+#         return
+    
+#     # Lấy thông tin về FPS và kích thước frame
+#     fps = int(cap.get(cv2.CAP_PROP_FPS))
+#     frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+#     frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+#     fourcc = cv2.VideoWriter_fourcc(*'XVID')  # Codec để lưu video
+    
+#     start_time = time.time()
+#     segment_count = 0
+    
+#     while True:
+#         segment_start_time = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+#         output_file = f"{output_dir}/video_{segment_start_time}.avi"
+        
+#         out = cv2.VideoWriter(output_file, fourcc, fps, (frame_width, frame_height))
+        
+#         # Ghi video trong thời gian segment_duration giây
+#         while time.time() - start_time < segment_duration:
+#             ret, frame = cap.read()
+#             if not ret:
+#                 print("Không đọc được frame từ camera.")
+#                 break
+#             out.write(frame)
+        
+#         # Đóng file video hiện tại
+#         out.release()
+#         print(f"Đã lưu: {output_file}")
+        
+#         # Reset thời gian bắt đầu cho đoạn video tiếp theo
+#         start_time = time.time()
+#         segment_count += 1
+
+#     cap.release()
+
+# # Cấu hình
+# rtsp_url = "rtsp://cxview:gs252525@113.161.58.13:554/Streaming/Channels/701"
+# output_dir = "videos_recorded"
+# save_rtsp_video(rtsp_url, output_dir)
+
+
+            
+#---------------------
+# rename file video in folder
+folder_path = '/home/server/namtp/code/trash-dumping/trash/video/New1703/'
+videos = os.listdir(folder_path)
+for i, video in enumerate(videos):
+    if video.endswith('.mp4'):
+        # new name = stt
+        new_name = f'New1703_{i}.mp4'
+        os.rename(os.path.join(folder_path, video), os.path.join(folder_path, new_name))
+        print(f'Rename {video} to {new_name}')

@@ -98,7 +98,7 @@ def crop_video_to_image(path_video, folder_save, label, model_detect_person, mod
                     write_txt(noidung= '2 {} {} {} {}'.format(left, top, right, bottom),\
                             path= os.path.join(path_save_labels_id, str(id_frame).zfill(5) + '.txt'))
                 else :
-                    write_txt(noidung= '0 {} {} {} {}'.format(left, top, right, bottom),\
+                    write_txt(noidung= '0 {} {} {} {}'.format(int(left), int(top), int(right), int(bottom)),\
                             path= os.path.join(path_save_labels_id, str(id_frame).zfill(5) + '.txt'))
                 # ve de kiem tra detect cua video
 
