@@ -127,3 +127,21 @@ def save_storage(frame):
     cv2.imwrite(f'temp_file/{violation_image_id}.jpg', frame)
     s3.upload_file(f'temp_file/{violation_image_id}.jpg', f'{violation_image_id}.jpg')
     os.remove(f'temp_file/{violation_image_id}.jpg') 
+
+
+def vis_detection_test_model(frame, scores, labels, bboxes, vis_thresh, class_names, class_colors):
+    ts = 0.4
+    for i, bbox in enumerate(bboxes):
+        if scores[i] > vis_thresh:
+            label = int(labels[i])
+            cls_color = class_colors[label]
+                
+            if len(class_names) > 1:
+                mess = '%s: %.2f' % (class_names[label], scores[i])
+            else:
+                cls_color = [255, 0, 0]
+                mess = None
+                # visualize bbox
+            frame = plot_bbox_labels(frame, bbox, mess, cls_color, text_scale=ts)
+
+    return frame

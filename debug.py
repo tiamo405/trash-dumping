@@ -306,11 +306,24 @@ print(str(uuid.uuid4().hex))
             
 #---------------------
 # rename file video in folder
-folder_path = '/home/server/namtp/code/trash-dumping/trash/video/New1703/'
-videos = os.listdir(folder_path)
-for i, video in enumerate(videos):
-    if video.endswith('.mp4'):
-        # new name = stt
-        new_name = f'New1703_{i}.mp4'
-        os.rename(os.path.join(folder_path, video), os.path.join(folder_path, new_name))
-        print(f'Rename {video} to {new_name}')
+# folder_path = '/home/server/namtp/code/trash-dumping/trash/video/New1703/'
+# videos = os.listdir(folder_path)
+# for i, video in enumerate(videos):
+#     if video.endswith('.mp4'):
+#         # new name = stt
+#         new_name = f'New1703_{i}.mp4'
+#         os.rename(os.path.join(folder_path, video), os.path.join(folder_path, new_name))
+#         print(f'Rename {video} to {new_name}')
+
+pathlabel = 'results/ucf_detections/yowo_v2_medium/detections_1/Littering_VID_20230310_162034-00001_00010.txt'
+pathimg = 'trash/rgb-images/Littering/VID_20230310_162034-00001/00010.jpg'
+img = cv2.imread(pathimg)
+
+with open(pathlabel, 'r') as f:
+    lines = f.readlines()
+    for line in lines:
+        line = line.strip().split()
+        labelclass, conf, x1, y1, x2, y2 = line[0], float(line[1]), int(line[2]), int(line[3]), int(line[4]), int(line[5])
+        cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+        cv2.putText(img, labelclass + '_' +str(conf), (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+cv2.imwrite('d.jpg', img)

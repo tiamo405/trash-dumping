@@ -1003,6 +1003,157 @@ def evaluate_frameAP(gtFolder, detFolder, threshold = 0.5, savePath = None, data
 
     return AP_res
 
+#--------------------------------custom-------------------------
+def calculate_iou(box1, box2):
+    # Tính IoU giữa hai bounding box
+    x1 = max(box1[0], box2[0])
+    y1 = max(box1[1], box2[1])
+    x2 = min(box1[2], box2[2])
+    y2 = min(box1[3], box2[3])
+    
+    inter_area = max(0, x2 - x1 + 1) * max(0, y2 - y1 + 1)
+    box1_area = (box1[2] - box1[0] + 1) * (box1[3] - box1[1] + 1)
+    box2_area = (box2[2] - box2[0] + 1) * (box2[3] - box2[1] + 1)
+    
+    union_area = box1_area + box2_area - inter_area
+    return inter_area / union_area
+def compute_average_precision(recalls, precisions):
+    """Tính AP bằng cách lấy diện tích dưới đường Precision-Recall curve"""
+    recalls = np.concatenate(([0.0], recalls, [1.0]))
+    precisions = np.concatenate(([0.0], precisions, [0.0]))
+    for i in range(len(precisions) - 1, 0, -1):
+        precisions[i - 1] = max(precisions[i - 1], precisions[i])
+    indices = np.where(recalls[1:] != recalls[:-1])[0]
+    ap = np.sum((recalls[indices + 1] - recalls[indices]) * precisions[indices + 1])
+    return ap
+def compute_map(gt_bboxes, gt_classes, det_bboxes, det_classes, det_scores, iou_threshold=0.5, num_classes=2):
+    """Tính mAP cho tất cả các lớp"""
+    aps = []
+    for c in range(1, num_classes + 1):  # Lặp qua từng lớp
+        gt_class_mask = [i for i, cls in enumerate(gt_classes) if cls == c]
+        det_class_mask = [i for i, cls in enumerate(det_classes) if cls == c]
+        
+        gt_bboxes_c = [gt_bboxes[i] for i in gt_class_mask]
+        det_bboxes_c = [det_bboxes[i] for i in det_class_mask]
+        det_scores_c = [det_scores[i] for i in det_class_mask]
 
+        if len(det_bboxes_c) == 0:
+            aps.append(0)
+            continue
+
+        # Sắp xếp dự đoán theo confidence score giảm dần
+        indices = np.argsort(-np.array(det_scores_c))
+        det_bboxes_c = [det_bboxes_c[i] for i in indices]
+        det_scores_c = [det_scores_c[i] for i in indices]
+
+        tp = np.zeros(len(det_bboxes_c))
+        fp = np.zeros(len(det_bboxes_c))
+        gt_used = np.zeros(len(gt_bboxes_c))
+
+        for i, det_bbox in enumerate(det_bboxes_c):
+            max_iou = 0
+            max_idx = -1
+            for j, gt_bbox in enumerate(gt_bboxes_c):
+                iou = calculate_iou(det_bbox, gt_bbox)
+                if iou > max_iou:
+                    max_iou = iou
+                    max_idx = j
+            if max_iou >= iou_threshold and gt_used[max_idx] == 0:
+                tp[i] = 1
+                gt_used[max_idx] = 1
+            else:
+                fp[i] = 1
+
+        # Tính Precision và Recall
+        tp_cumsum = np.cumsum(tp)
+        fp_cumsum = np.cumsum(fp)
+        precisions = tp_cumsum / (tp_cumsum + fp_cumsum + 1e-8)
+        recalls = tp_cumsum / (len(gt_bboxes_c) + 1e-8)
+
+        # Tính AP
+        ap = compute_average_precision(recalls, precisions)
+        aps.append(ap)
+
+    return np.mean(aps)
+
+def evaluate_class_metrics(gt_classes, det_classes):
+    # Đảm bảo độ dài hai danh sách giống nhau
+    assert len(gt_classes) == len(det_classes), "Ground truth và predicted classes phải cùng kích thước"
+
+    # Khởi tạo đếm TP, FP, FN
+    tp = sum(1 for gt, det in zip(gt_classes, det_classes) if gt == 1 and det == 1)
+    fp = sum(1 for gt, det in zip(gt_classes, det_classes) if gt != 1 and det == 1)
+    fn = sum(1 for gt, det in zip(gt_classes, det_classes) if gt == 1 and det != 1)
+
+    # Tính toán các chỉ số
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0
+    f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
+    accuracy = sum(1 for gt, det in zip(gt_classes, det_classes) if gt == det) / len(gt_classes)
+
+    return precision, recall, f1, accuracy
+
+def evaluate_frameAP_custom(detFolder, threshold = 0.5, savePath = None, dataset='trash', show_pr_curve=False):
+    gtAllBoundingBoxes = []
+    gtAllClasses = []
+    detAllBoundingBoxes = []
+    detAllClasses = []
+    detAllScores = []
+    pathTestlist = 'trash/testlist.txt'
+    #read testlist
+    with open(pathTestlist) as f:
+        testlist = f.readlines()
+    testlist = [x.strip() for x in testlist] # all file trong testlist
+
+    folderdet = os.path.join('results/ucf_detections/yowo_v2_medium/', detFolder)
+    filedets  = os.listdir(folderdet) # all file trong testlist da di qua model
+
+    for test in testlist:
+        name_file = test.split('/')[-2]+'_'+test.split('/')[-1]
+        # groundtruth
+        pathgtlabel = os.path.join('trash', test)
+        with open(pathgtlabel) as f:
+            lines = f.readlines()
+        temp = []
+        for line in lines:
+            line = line.split(' ')
+            label, x, y, w, h = int(line[0]), int(float(line[1])), int(float(line[2])), int(float(line[3])), int(float(line[4])),
+            temp.append([label, x, y, w, h])
+        gtAllClasses.append(temp[0][0])
+        gtAllBoundingBoxes.append(temp[0][1:])
+
+        # detection
+        for file in filedets: # duyet tung file
+            if name_file in file:
+                pathDetLabel = os.path.join(folderdet, file)
+                with open(pathDetLabel) as f:
+                    lines = f.readlines()
+                temp = []
+                for line in lines:
+                    line = line.split(' ')
+                    label, conf, x, y, w, h = int(line[0]), float(line[1]), int(float(line[2])), int(float(line[3])), int(float(line[4])), int(float(line[5])),
+                    # add conf max
+                    if len(temp) == 0:
+                        temp.append([label, conf, x, y, w, h])
+                    else:
+                        if conf > temp[0][1]:
+                            temp[0] = [label, conf, x, y, w, h]
+                break
+        detAllClasses.append(temp[0][0])
+        detAllScores.append(temp[0][1])
+        detAllBoundingBoxes.append(temp[0][2:])
+    # print(f'len(gtAllClasses) = {len(gtAllClasses)}, len(detAllClasses) = {len(detAllClasses)}, len(gtAllBoundingBoxes) = {len(gtAllBoundingBoxes)}, len(detAllBoundingBoxes) = {len(detAllBoundingBoxes)}')
+    precision, recall, f1, accu = evaluate_class_metrics(gtAllClasses, detAllClasses)
+    # print(f'precision = {precision}, recall = {recall}, f1 = {f1}, accu = {accu}')
+    map_score = compute_map(gtAllBoundingBoxes, gtAllClasses, detAllBoundingBoxes, detAllClasses, detAllScores)
+    # print(f'mAP = {map_score}')
+    AP_res = []
+    AP_res.append(f'precision = {precision}')
+    AP_res.append(f'recall = {recall}')
+    AP_res.append(f'f1 = {f1}')
+    AP_res.append(f'accu = {accu}')
+    AP_res.append(f'mAP = {map_score}')
+    return AP_res
 if __name__ == '__main__':
-    evaluate_frameAP('groundtruths_ucf', 'detection_test')
+    # evaluate_frameAP('groundtruths_ucf', 'detection_test')
+    evaluate_frameAP_custom('groundtruths', 'detections_1', threshold = 0.5, savePath = 'results', dataset='trash', show_pr_curve=False)

@@ -27,21 +27,21 @@ def parse_args():
                         type=str, help='Trained state_dict file path to open')
 
     # dataset
-    parser.add_argument('-d', '--dataset', default='ucf24',
+    parser.add_argument('-d', '--dataset', default='trash',
                         help='ucf24, jhmdb, ava_v2.2.')
-    parser.add_argument('--root', default='/mnt/share/ssd2/dataset/STAD/',
+    parser.add_argument('--root', default='',
                         help='data root')
 
     # eval
-    parser.add_argument('--cal_frame_mAP', action='store_true', default=False, 
+    parser.add_argument('--cal_frame_mAP', action='store_true', default=True, 
                         help='calculate frame mAP.')
     parser.add_argument('--cal_video_mAP', action='store_true', default=False, 
                         help='calculate video mAP.')
 
     # model
-    parser.add_argument('-v', '--version', default='yowo_v2_large', type=str,
+    parser.add_argument('-v', '--version', default='yowo_v2_medium', type=str,
                         help='build YOWOv2')
-    parser.add_argument('--weight', default=None,
+    parser.add_argument('--weight', default='checkpoints/trash/yowo_v2_medium/yowo_v2_medium_epoch_50.pth',
                         type=str, help='Trained state_dict file path to open')
     parser.add_argument('-ct', '--conf_thresh', default=0.1, type=float,
                         help='confidence threshold. We suggest 0.005 for UCF24 and 0.1 for AVA.')
@@ -49,7 +49,7 @@ def parse_args():
                         help='NMS threshold. We suggest 0.5 for UCF24 and AVA.')
     parser.add_argument('--topk', default=40, type=int,
                         help='topk prediction candidates.')
-    parser.add_argument('-K', '--len_clip', default=16, type=int,
+    parser.add_argument('-K', '--len_clip', default=8, type=int,
                         help='video clip length.')
     parser.add_argument('-m', '--memory', action="store_true", default=False,
                         help="memory propagate.")
@@ -58,7 +58,7 @@ def parse_args():
 
 
 def ucf_jhmdb_eval(args, d_cfg, model, transform, collate_fn):
-    data_dir = os.path.join(args.root, 'ucf24')
+    data_dir = os.path.join(args.root, args.dataset)
     if args.cal_frame_mAP:
         # Frame mAP evaluator
         evaluator = UCF_JHMDB_Evaluator(
@@ -129,6 +129,8 @@ if __name__ == '__main__':
     elif args.dataset == 'ava_v2.2':
         num_classes = 80
 
+    elif args.dataset == 'trash':
+        num_classes = 2
     else:
         print('unknow dataset.')
         exit(0)
@@ -165,7 +167,7 @@ if __name__ == '__main__':
     basetransform = BaseTransform(img_size=args.img_size)
 
     # run
-    if args.dataset in ['ucf24', 'jhmdb21']:
+    if args.dataset in ['ucf24', 'jhmdb21', 'trash']:
         ucf_jhmdb_eval(
             args=args,
             d_cfg=d_cfg,

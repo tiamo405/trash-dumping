@@ -11,7 +11,7 @@ from dataset.transforms import BaseTransform
 
 from utils.misc import load_weight
 from utils.box_ops import rescale_bboxes
-from utils.vis_tools import convert_tensor_to_cv2img, vis_detection
+from utils.vis_tools import convert_tensor_to_cv2img, vis_detection_test_model
 
 from config import build_dataset_config, build_model_config
 from models import build_model
@@ -27,7 +27,7 @@ def parse_args():
                         help='show the visulization results.')
     parser.add_argument('--cuda', action='store_true', default=False, 
                         help='use cuda.')
-    parser.add_argument('--save', action='store_true', default=False, 
+    parser.add_argument('--save', action='store_true', default=True, 
                         help='save detection results.')
     parser.add_argument('--save_folder', default='./det_results/', type=str,
                         help='Dir to save results')
@@ -37,9 +37,9 @@ def parse_args():
                         help='start index to test.')
 
     # model
-    parser.add_argument('-v', '--version', default='yowo_v2_large', type=str,
+    parser.add_argument('-v', '--version', default='yowo_v2_medium', type=str,
                         help='build YOWOv2')
-    parser.add_argument('--weight', default=None,
+    parser.add_argument('--weight', default='checkpoints/trash/yowo_v2_medium/yowo_v2_medium_epoch_50.pth',
                         type=str, help='Trained state_dict file path to open')
     parser.add_argument('-ct', '--conf_thresh', default=0.1, type=float,
                         help='confidence threshold')
@@ -47,13 +47,13 @@ def parse_args():
                         help='NMS threshold')
     parser.add_argument('--topk', default=40, type=int,
                         help='NMS threshold')
-    parser.add_argument('-K', '--len_clip', default=16, type=int,
+    parser.add_argument('-K', '--len_clip', default=8, type=int,
                         help='video clip length.')
     
     # dataset
-    parser.add_argument('-d', '--dataset', default='ucf24',
+    parser.add_argument('-d', '--dataset', default='trash',
                         help='ucf24, ava.')
-    parser.add_argument('--root', default='/mnt/share/ssd2/dataset/STAD/',
+    parser.add_argument('--root', default='./',
                         help='data root')
 
     return parser.parse_args()
@@ -98,7 +98,7 @@ def inference_ucf24_jhmdb21(args, model, device, dataset, class_names=None, clas
         key_frame = cv2.resize(key_frame, orig_size)
 
         # visualize detection
-        vis_results = vis_detection(
+        vis_results = vis_detection_test_model(
             frame=key_frame,
             scores=scores,
             labels=labels,
@@ -213,8 +213,8 @@ if __name__ == '__main__':
     basetransform = BaseTransform(img_size=args.img_size)
 
     # dataset
-    if args.dataset in ['ucf24', 'jhmdb21']:
-        data_dir = os.path.join(args.root, 'ucf24')
+    if args.dataset in ['ucf24', 'jhmdb21', 'trash']:
+        data_dir = os.path.join(args.root, args.dataset)
         dataset = UCF_JHMDB_Dataset(
             data_root=data_dir,
             dataset=args.dataset,
@@ -267,7 +267,7 @@ if __name__ == '__main__':
     model = model.to(device).eval()
 
     # run
-    if args.dataset in ['ucf24', 'jhmdb21']:
+    if args.dataset in ['ucf24', 'jhmdb21','trash']:
         inference_ucf24_jhmdb21(
             args=args,
             model=model,

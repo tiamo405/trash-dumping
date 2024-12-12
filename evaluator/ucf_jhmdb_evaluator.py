@@ -6,7 +6,7 @@ from scipy.io import loadmat
 from dataset.ucf_jhmdb import UCF_JHMDB_Dataset, UCF_JHMDB_VIDEO_Dataset
 from utils.box_ops import rescale_bboxes
 
-from .cal_frame_mAP import evaluate_frameAP
+from .cal_frame_mAP import evaluate_frameAP, evaluate_frameAP_custom
 from .cal_video_mAP import evaluate_videoAP
 
 
@@ -102,7 +102,7 @@ class UCF_JHMDB_Evaluator(object):
                     if not os.path.exists('results'):
                         os.mkdir('results')
 
-                    if self.dataset == 'ucf24':
+                    if self.dataset == 'ucf24' or self.dataset == 'trash':
                         detection_path = os.path.join('results', 'ucf_detections', self.model_name, 'detections_' + str(epoch), frame_id)
                         current_dir = os.path.join('results', 'ucf_detections',  self.model_name, 'detections_' + str(epoch))
                         if not os.path.exists('results/ucf_detections/'):
@@ -138,7 +138,10 @@ class UCF_JHMDB_Evaluator(object):
                     print(log_info, flush=True)
 
         print('calculating Frame mAP ...')
-        metric_list = evaluate_frameAP(self.gt_folder, current_dir, self.iou_thresh,
+        if self.dataset == 'trash':
+            metric_list = evaluate_frameAP_custom('detections_' + str(epoch), self.iou_thresh,self.save_path, self.dataset)
+        else:
+            metric_list = evaluate_frameAP(self.gt_folder, current_dir, self.iou_thresh,
                               self.save_path, self.dataset, show_pr_curve)
         for metric in metric_list:
             print(metric)
