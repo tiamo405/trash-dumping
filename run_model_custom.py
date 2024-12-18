@@ -275,7 +275,7 @@ def detect(args, model, device, transform, class_names, class_colors):
                     track_id = track.track_id
                     frame_copy = deepcopy(frame)
                     frame_copy = cv2.rectangle(frame_copy, (int(left), int(top)), (int(right), int(bottom)), class_colors["Littering"], 2)
-                    frame_copy = cv2.putText(frame_copy, f'id: {str(track_id)}', (int(left), int(top-10)), cv2.FONT_HERSHEY_SIMPLEX, 1.0, class_colors["Littering"], 1)
+                    frame_copy = cv2.putText(frame_copy, f'id: {str(track_id)}', (int(left), int(top+20)), cv2.FONT_HERSHEY_SIMPLEX, 1.0, class_colors["Littering"], 1)
                     # Kiểm tra xem có ID nào mới không
                     if track_id not in trash_ids:
                         # Thêm ID mới vào danh sách
