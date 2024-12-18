@@ -59,6 +59,23 @@ def build_split_data(raw_data) :
         train_video, test_video = fvideos[:n_train], fvideos[n_train:]
         create_txt(raw_data= raw_data, label= label, arr_videos= train_video, file_txt= train_file_txt)
         create_txt(raw_data= raw_data, label= label, arr_videos= test_video, file_txt= test_file_txt)
+    # shuffle file list train/test
+    with open(train_file_txt, 'r') as fin:
+        lines = fin.readlines()
+    fin.close()
+    with open(train_file_txt, 'w') as fout:
+        np.random.shuffle(lines)
+        for line in lines:
+            fout.write(line)
+    fout.close()
+    with open(test_file_txt, 'r') as fin:
+        lines = fin.readlines()
+    fin.close()
+    with open(test_file_txt, 'w') as fout:
+        np.random.shuffle(lines)
+        for line in lines:
+            fout.write(line)
+    fout.close()
     print('{} analysis split data done'.format(raw_data))
 
 
