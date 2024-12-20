@@ -197,6 +197,19 @@ async def start_cam(cam_id: str, is_active: bool, username: str = Depends(verify
             else:
                 return Response(500, error_resp=500)
 
+# api edit camera
+@camera_router.put("/edit")
+async def edit_cam(cam_id: str, location: str, username: str = Depends(verify_token)):
+    camera = mongo_manager.collection_camera.find_one({"_id": ObjectId(cam_id)})
+    if not camera:
+        return Response(102, error_resp=102)
+    else:
+        camera['location'] = location
+        ok = mongo_manager.update_camera(camera)
+        if ok:
+            return Response(200, msg="Camera is update")
+        else:
+            raise HTTPException(status_code=500, detail={"status": "can't update camera"})
 
 # get all lacation camera
 @camera_router.get("/get_all_location")
