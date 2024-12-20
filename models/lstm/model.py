@@ -86,7 +86,7 @@ class SequenceDataset(Dataset):
             feature = self.feature_extractor.extract_img(img_person)
             features.append(feature)
 
-        label = 0 if 'Normal' in label_path else 1
+        label = 1 if 'Normal' in label_path else 0
 
         return torch.tensor(features, dtype=torch.float32), torch.tensor(label, dtype=torch.long)
 
