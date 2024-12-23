@@ -27,7 +27,6 @@ class imageViolation(BaseModel):
 async def get_history(rtsp_url: str , date: int  , page: int = 1, limit: int = 10, username: str = Depends(verify_token)):
     try:
         camera = mongo_manager.get_camera_by_rtsp(rtsp_url)
-        print(date)
         if not camera:
             return Response(402, error_resp=402)
         else:
@@ -105,20 +104,23 @@ async def get_all_violation(location : str = '', is_violation : bool = True , pa
 
 # set is_violation = True or False
 @view_router.post("/set_violation")
-# async def set_violation(id_image: str , is_violation: bool):
 async def set_violation(imageRequest: imageViolation, username: str = Depends(verify_token)):
     try:
+        if username != "admin":
+            raise HTTPException(status_code=401, detail="You don't have permission")
         violation = mongo_manager.collection_violation_image.find_one({"_id": ObjectId(imageRequest.image_id)})
         violation["is_violation"] = imageRequest.is_violation
         mongo_manager.collection_violation_image.update_one({"_id": violation["_id"]}, {"$set": violation})
         return Response(200, entities={"image_id": imageRequest.image_id, "is_violation": imageRequest.is_violation})
     except Exception as e:
-        return Response(1, error_resp=1, msg = str(e))
+        return HTTPException(status_code=500, detail=str(e))
 
 # delete violation_image
 @view_router.delete("/delete_violation")
 async def delete_violation(id_image: str, username: str = Depends(verify_token)):
     try:
+        if username != "admin":
+            raise HTTPException(status_code=401, detail="You don't have permission")
         violation = mongo_manager.collection_violation_image.find_one({"_id": ObjectId(id_image)})
         if not violation:
             return Response(1, error_resp=1)
