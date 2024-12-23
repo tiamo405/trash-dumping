@@ -15,20 +15,23 @@ from utils.vis_tools import vis_detection
 from config import build_dataset_config, build_model_config
 from models import build_model
 from logs import setup_logger
-from config import WEIGHT, VIDEO_PATH, DEBUG
+from config import WEIGHT, VIDEO_PATH, DEBUG, BOT_TOKEN, MONGO_URI, ENDPOINT, ACCESS_KEY, SECRET_KEY, BUCKET, SECURE
 
 from deep_sort.tracker import Tracker
 
 from storage.s3_minio import S3Minio
 from storage.mongo import MongoDBManager
+from telegram.bot import MyBot
 from utils import time_utils
 
 # khoi tao doi tuong S3Minio
-s3 = S3Minio()
+s3 = S3Minio(endpoint=ENDPOINT, access_key=ACCESS_KEY, secret_key=SECRET_KEY, bucket=BUCKET, secure=SECURE)
 # khoi tao doi tuong Mongo
-mongo = MongoDBManager()
+mongo = MongoDBManager(uri=MONGO_URI)
 # khoi tao doi tuong Tracker
 tracker = Tracker()
+# khoi tao doi tuong Telegram
+myBot = MyBot(token=BOT_TOKEN)
 
 def parse_args():
     parser = argparse.ArgumentParser(description='YOWOv2 Demo')
@@ -139,6 +142,8 @@ def save_storage(frame, logger_cam):
     logger_cam.info(f"New detected Littering id {violation_image_id} at {current_timesteamp}")
     cv2.imwrite(f'temp_file/{violation_image_id}.jpg', frame)
     s3.upload_file(f'temp_file/{violation_image_id}.jpg', f'{violation_image_id}.jpg')
+    # noti telegram
+    myBot.send_notification(f"New detected Littering at {str(time_utils.get_datetime())}", f'temp_file/{violation_image_id}.jpg')
     os.remove(f'temp_file/{violation_image_id}.jpg') 
 
 def open_rtsp_camera(rtsp_url, logger_cam, retry_interval=5, max_retries=5, stop_cam = False):
