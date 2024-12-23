@@ -27,7 +27,7 @@ def get_date_timestamp():
 
 # get datetime
 def get_datetime():
-    return datetime.now()
+    return (datetime.now(timezone.utc) + timedelta(hours=7))
 
 def get_midnight_timestamp_gmt7():
     # Lấy thời gian hiện tại
@@ -40,8 +40,9 @@ def get_midnight_timestamp_gmt7():
     return int(vietnam_midnight.timestamp())
 
 if '__main__' == __name__:
-    print(get_date_timestamp())
-    # print(datetime.combine(datetime.now().date(), time(0, 0, 0)).timestamp())
-    # print(datetime.now())
-    print(get_midnight_timestamp_gmt7())
+    # print(get_date_timestamp())
+    # # print(datetime.combine(datetime.now().date(), time(0, 0, 0)).timestamp())
+    # # print(datetime.now())
+    # print(get_midnight_timestamp_gmt7())
+    print(get_datetime())
     
