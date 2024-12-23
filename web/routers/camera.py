@@ -68,6 +68,10 @@ async def list_cam(page: int = 1, limit: int = 5, username: str = Depends(verify
 
 @camera_router.post("/create")
 async def create_cam(cameraRequest: Camera, username: str = Depends(verify_token)):
+    if username != "admin":
+        raise HTTPException(
+                status_code=400,
+                detail={"error_code": "FS.0105", "message": "You don't have permission to add camera."})
     camera = mongo_manager.get_camera_by_rtsp(cameraRequest.rtsp_url)
     if camera: # camera already
         # return Response(101, error_resp=101)
@@ -124,12 +128,16 @@ async def create_cam(cameraRequest: Camera, username: str = Depends(verify_token
 
 @camera_router.delete("/remove")
 async def remove_cam(cam_id : str, username: str = Depends(verify_token)):
-# async def remove_cam(cam_id : str):
-    if cam_id == '671b0ca3b236731f0056e606':
+    if username != "admin":
         raise HTTPException(
                 status_code=400,
-                detail={"error_code": "FS.0104", "message": "Can't remove this camera."}
+                detail={"error_code": "FS.0105", "message": "You don't have permission to remove camera."}
             )
+    # if cam_id == '671b0ca3b236731f0056e606':
+    #     raise HTTPException(
+    #             status_code=400,
+    #             detail={"error_code": "FS.0104", "message": "Can't remove this camera."}
+    #         )
     try:
         camera = mongo_manager.collection_camera.find_one({"_id": ObjectId(cam_id)})
         if not camera: # camera not exists
@@ -153,10 +161,17 @@ async def remove_cam(cam_id : str, username: str = Depends(verify_token)):
 
 @camera_router.post("/change_is_active")
 async def start_cam(cam_id: str, is_active: bool, username: str = Depends(verify_token)):
-    print(cam_id, is_active)
+    if username != "admin":
+        raise HTTPException(
+                status_code=400,
+                detail={"error_code": "FS.0105", "message": "You don't have permission to change camera state."}
+            )
     camera = mongo_manager.collection_camera.find_one({"_id": ObjectId(cam_id)})
     if not camera:
-        return Response(102, error_resp=102)
+        raise HTTPException(
+                status_code=400,
+                detail={"error_code": "FS.0102", "message": "Camera doesn't recognize."}
+            )
     else:
         if camera['is_activate'] == is_active:
             raise HTTPException(
@@ -195,14 +210,22 @@ async def start_cam(cam_id: str, is_active: bool, username: str = Depends(verify
             if ok:
                 return Response(200, msg="Camera is update")
             else:
-                return Response(500, error_resp=500)
+                raise HTTPException(status_code=500, detail={"status": "can't update camera"})
 
 # api edit camera
 @camera_router.put("/edit")
 async def edit_cam(cam_id: str, location: str, username: str = Depends(verify_token)):
+    if username != "admin":
+        raise HTTPException(
+                status_code=400,
+                detail={"error_code": "FS.0105", "message": "You don't have permission to edit camera."}
+            )
     camera = mongo_manager.collection_camera.find_one({"_id": ObjectId(cam_id)})
     if not camera:
-        return Response(102, error_resp=102)
+        raise HTTPException(
+                status_code=400,
+                detail={"error_code": "FS.0102", "message": "Camera doesn't recognize."}
+            )
     else:
         camera['location'] = location
         ok = mongo_manager.update_camera(camera)
