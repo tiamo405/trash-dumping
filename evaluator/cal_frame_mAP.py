@@ -1093,7 +1093,7 @@ def evaluate_class_metrics(gt_classes, det_classes):
 
     return precision, recall, f1, accuracy
 
-def evaluate_frameAP_custom(detFolder, threshold = 0.5, savePath = None, dataset='trash', show_pr_curve=False):
+def evaluate_frameAP_custom(model_name, detFolder, threshold = 0.5, savePath = None, dataset='trash', show_pr_curve=False):
     gtAllBoundingBoxes = []
     gtAllClasses = []
     detAllBoundingBoxes = []
@@ -1105,7 +1105,7 @@ def evaluate_frameAP_custom(detFolder, threshold = 0.5, savePath = None, dataset
         testlist = f.readlines()
     testlist = [x.strip() for x in testlist] # all file trong testlist
 
-    folderdet = os.path.join('results/ucf_detections/yowo_v2_medium/', detFolder)
+    folderdet = os.path.join('results/ucf_detections/',model_name, detFolder)
     filedets  = os.listdir(folderdet) # all file trong testlist da di qua model
 
     for test in testlist:
@@ -1156,4 +1156,5 @@ def evaluate_frameAP_custom(detFolder, threshold = 0.5, savePath = None, dataset
     return AP_res
 if __name__ == '__main__':
     # evaluate_frameAP('groundtruths_ucf', 'detection_test')
-    evaluate_frameAP_custom('groundtruths', 'detections_1', threshold = 0.5, savePath = 'results', dataset='trash', show_pr_curve=False)
+    AP_res = evaluate_frameAP_custom('detections_1', threshold = 0.5, savePath = 'results', dataset='trash', show_pr_curve=False)
+    print(AP_res)

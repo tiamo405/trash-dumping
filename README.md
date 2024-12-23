@@ -124,6 +124,10 @@ or you can just run the script:
 ```Shell
 bash demo_trash.sh
 ```
+## eval
+```sh
+python eval.py
+```
 # docker
 ## image base
 ```sh

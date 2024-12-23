@@ -43,7 +43,7 @@ def parse_args():
                         help='build YOWOv2')
     parser.add_argument('--weight', default='checkpoints/trash/yowo_v2_medium/yowo_v2_medium_epoch_50.pth',
                         type=str, help='Trained state_dict file path to open')
-    parser.add_argument('-ct', '--conf_thresh', default=0.1, type=float,
+    parser.add_argument('-ct', '--conf_thresh', default=0.005, type=float,
                         help='confidence threshold. We suggest 0.005 for UCF24 and 0.1 for AVA.')
     parser.add_argument('-nt', '--nms_thresh', default=0.5, type=float,
                         help='NMS threshold. We suggest 0.5 for UCF24 and AVA.')
@@ -77,7 +77,7 @@ def ucf_jhmdb_eval(args, d_cfg, model, transform, collate_fn):
             save_path=args.save_path
             )
         # evaluate
-        evaluator.evaluate_frame_map(model, show_pr_curve=True)
+        evaluator.evaluate_frame_map(model, epoch = 2, show_pr_curve=True)
 
     elif args.cal_video_mAP:
         # Video mAP evaluator

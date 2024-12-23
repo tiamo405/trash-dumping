@@ -63,7 +63,7 @@ class UCF_JHMDB_Evaluator(object):
             self.num_classes = self.testset.num_classes
 
 
-    def evaluate_frame_map(self, model, epoch=1, show_pr_curve=False):
+    def evaluate_frame_map(self, model, epoch=2, show_pr_curve=False):
         print("Metric: Frame mAP")
         # dataloader
         self.testloader = torch.utils.data.DataLoader(
@@ -139,7 +139,7 @@ class UCF_JHMDB_Evaluator(object):
 
         print('calculating Frame mAP ...')
         if self.dataset == 'trash':
-            metric_list = evaluate_frameAP_custom('detections_' + str(epoch), self.iou_thresh,self.save_path, self.dataset)
+            metric_list = evaluate_frameAP_custom(self.model_name, 'detections_' + str(epoch), self.iou_thresh,self.save_path, self.dataset)
         else:
             metric_list = evaluate_frameAP(self.gt_folder, current_dir, self.iou_thresh,
                               self.save_path, self.dataset, show_pr_curve)

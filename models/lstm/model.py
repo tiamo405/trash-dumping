@@ -13,8 +13,10 @@ from typing import List
 # 1. Hàm trích xuất đặc trưng từ ảnh
 class FeatureExtractor:
     def __init__(self):
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = models.resnet50(pretrained=True)
         self.model = nn.Sequential(*list(self.model.children())[:-1])  # Remove last layer
+        self.model = self.model.to(self.device)
         self.model.eval()
     
     def extract(self, img_path: str):
@@ -37,6 +39,7 @@ class FeatureExtractor:
         # img cv2 convert to PIL
         img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
         img_tensor = preprocess(img).unsqueeze(0)
+        img_tensor = img_tensor.to(self.device) # Chuyển sang GPU nếu có
         with torch.no_grad():
             features = self.model(img_tensor)
         return features.flatten().numpy()
