@@ -10,14 +10,14 @@ from minio.error import S3Error
 from config import ENDPOINT, ACCESS_KEY, SECRET_KEY, SECURE, BUCKET
 
 class S3Minio:
-    def __init__(self, endpoint=ENDPOINT, access_key=ACCESS_KEY, secret_key=SECRET_KEY, secure=SECURE):
+    def __init__(self, endpoint=ENDPOINT, access_key=ACCESS_KEY, secret_key=SECRET_KEY, bucket = BUCKET, secure=SECURE):
         self.client = Minio(
             endpoint=endpoint,
             access_key=access_key,
             secret_key=secret_key,
             secure=secure
         )
-        self.bucket_name = BUCKET
+        self.bucket_name = bucket
 
     def geturl(self, object_name):
         try:
