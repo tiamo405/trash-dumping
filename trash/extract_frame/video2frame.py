@@ -63,6 +63,9 @@ def get_opt():
 if __name__ == "__main__":
 
     opt = get_opt()
+    opt.dir_save = os.path.join(opt.dir_save, opt.dir_data)
+    os.makedirs(opt.dir_save, exist_ok= True)
+
     print('\n'.join(map(str,(str(opt).split('(')[1].split(',')))))
     prepro = Preprocessing(opt)
     prepro.crop_video()
