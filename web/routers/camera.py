@@ -213,21 +213,24 @@ async def start_cam(cam_id: str, is_active: bool, username: str = Depends(verify
                 raise HTTPException(status_code=500, detail={"status": "can't update camera"})
 
 # api edit camera
+class editCamera(BaseModel):
+    cam_id: str
+    location: str
 @camera_router.put("/edit")
-async def edit_cam(cam_id: str, location: str, username: str = Depends(verify_token)):
+async def edit_cam(editcam: editCamera, username: str = Depends(verify_token)):
     if username != "admin":
         raise HTTPException(
                 status_code=400,
                 detail={"error_code": "FS.0105", "message": "You don't have permission to edit camera."}
             )
-    camera = mongo_manager.collection_camera.find_one({"_id": ObjectId(cam_id)})
+    camera = mongo_manager.collection_camera.find_one({"_id": ObjectId(editcam.cam_id)})
     if not camera:
         raise HTTPException(
                 status_code=400,
                 detail={"error_code": "FS.0102", "message": "Camera doesn't recognize."}
             )
     else:
-        camera['location'] = location
+        camera['location'] = editcam.location
         ok = mongo_manager.update_camera(camera)
         if ok:
             return Response(200, msg="Camera is update")
