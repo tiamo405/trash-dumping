@@ -43,6 +43,10 @@ async def login(userRequest : User):
     if not user:
         raise HTTPException(status_code=401, detail="Incorrect username or password")
     
+    # get role
+    role_id = user['role_id']
+    role = mongo_manager.collection_role.find_one({"_id": ObjectId(role_id)})
+    user["role"] = role["role_name"]
     # Tạo token cho user
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(data={"sub": user["username"]}, expires_delta=access_token_expires)
