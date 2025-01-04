@@ -114,63 +114,64 @@ class LSTMModel(nn.Module):
         x = self.fc(x[:, -1, :])  # Lấy output của bước cuối cùng
         return x
 
-input_size = 2048  # Dựa trên ResNet50 output
-hidden_size = 128
-output_size = 2
+if 'name' == '__main__':
+    input_size = 2048  # Dựa trên ResNet50 output
+    hidden_size = 128
+    output_size = 2
 
-model = LSTMModel(input_size, hidden_size, output_size)
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+    model = LSTMModel(input_size, hidden_size, output_size)
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-# Số lượng epoch
-epochs = 10
+    # Số lượng epoch
+    epochs = 10
 
-for epoch in range(epochs):
-    model.train()
-    total_loss = 0
-    correct = 0
-    total = 0
-    
-    for features, labels in train_loader:
-        optimizer.zero_grad()
-        outputs = model(features)
-        loss = criterion(outputs, labels)
+    for epoch in range(epochs):
+        model.train()
+        total_loss = 0
+        correct = 0
+        total = 0
         
-        # Tính toán độ chính xác (accuracy)
-        _, predicted = torch.max(outputs.data, 1)
-        correct += (predicted == labels).sum().item()
-        total += labels.size(0)
+        for features, labels in train_loader:
+            optimizer.zero_grad()
+            outputs = model(features)
+            loss = criterion(outputs, labels)
+            
+            # Tính toán độ chính xác (accuracy)
+            _, predicted = torch.max(outputs.data, 1)
+            correct += (predicted == labels).sum().item()
+            total += labels.size(0)
+            
+            # Cộng dồn loss cho epoch
+            total_loss += loss.item()
+            
+            # Cập nhật gradient và tối ưu hóa
+            loss.backward()
+            optimizer.step()
         
-        # Cộng dồn loss cho epoch
-        total_loss += loss.item()
-        
-        # Cập nhật gradient và tối ưu hóa
-        loss.backward()
-        optimizer.step()
-    
-    # Tính toán loss và accuracy trung bình cho epoch
-    avg_loss = total_loss / len(train_loader)
-    accuracy = 100 * correct / total
+        # Tính toán loss và accuracy trung bình cho epoch
+        avg_loss = total_loss / len(train_loader)
+        accuracy = 100 * correct / total
 
-    print(f"Epoch [{epoch+1}/{epochs}], Loss: {avg_loss:.4f}, Accuracy: {accuracy:.2f}%")
-    # Lưu trọng số của mô hình sau mỗi epoch (hoặc ở epoch cuối)
-    if os.path.isdir("checkpoints/lstm") == False:
-        os.makedirs("checkpoints/lstm")
-    checkpoint_path = f"checkpoints/lstm/model_weights_epoch_{epoch+1}.pth"
-    torch.save(model.state_dict(), checkpoint_path)
-    print(f"Saved model weights at {checkpoint_path}")
+        print(f"Epoch [{epoch+1}/{epochs}], Loss: {avg_loss:.4f}, Accuracy: {accuracy:.2f}%")
+        # Lưu trọng số của mô hình sau mỗi epoch (hoặc ở epoch cuối)
+        if os.path.isdir("checkpoints/lstm") == False:
+            os.makedirs("checkpoints/lstm")
+        checkpoint_path = f"checkpoints/lstm/model_weights_epoch_{epoch+1}.pth"
+        torch.save(model.state_dict(), checkpoint_path)
+        print(f"Saved model weights at {checkpoint_path}")
 
-# Đánh giá mô hình
-model.eval()
-all_preds = []
-all_labels = []
-with torch.no_grad():
-    for features, labels in test_loader:
-        outputs = model(features)
-        _, preds = torch.max(outputs, 1)
-        all_preds.extend(preds.numpy())
-        all_labels.extend(labels.numpy())
+    # Đánh giá mô hình
+    model.eval()
+    all_preds = []
+    all_labels = []
+    with torch.no_grad():
+        for features, labels in test_loader:
+            outputs = model(features)
+            _, preds = torch.max(outputs, 1)
+            all_preds.extend(preds.numpy())
+            all_labels.extend(labels.numpy())
 
-# Báo cáo kết quả
-print("Accuracy:", accuracy_score(all_labels, all_preds))
-print(classification_report(all_labels, all_preds))
+    # Báo cáo kết quả
+    print("Accuracy:", accuracy_score(all_labels, all_preds))
+    print(classification_report(all_labels, all_preds))

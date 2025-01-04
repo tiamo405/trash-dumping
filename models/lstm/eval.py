@@ -1,3 +1,4 @@
+import time
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -15,7 +16,7 @@ from model import FeatureExtractor, SequenceDataset, LSTMModel
 
 listtext_test = 'listtest.txt'
 test_dataset = SequenceDataset(listtext_test)
-test_loader = DataLoader(test_dataset, batch_size=8, shuffle=False)
+test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -32,7 +33,10 @@ with torch.no_grad():
         labels_true.extend(labels.numpy())
         features = features.to(device)
         labels = labels.to(device)
+        # check time 
+        t0 = time.time()
         outputs = model(features)
+        print('Time: ', time.time() - t0)
         _, predicted = torch.max(outputs, 1)
         labels_predic.extend(predicted.cpu().numpy())
 

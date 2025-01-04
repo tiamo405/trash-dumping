@@ -12,7 +12,7 @@ from PIL import Image
 from dataset.transforms import BaseTransform
 from utils.misc import load_weight
 from utils.box_ops import rescale_bboxes
-from utils.vis_tools import vis_detection
+from utils.vis_tools import vis_detection, vis_detection_test_model
 from config import build_dataset_config, build_model_config
 from models import build_model
 
@@ -46,13 +46,13 @@ def parse_args():
                         help='generate gif.')
 
     # class label config
-    parser.add_argument('-d', '--dataset', default='ava_v2.2',
+    parser.add_argument('-d', '--dataset', default='trash',
                         help='ava_v2.2')
     parser.add_argument('--pose', action='store_true', default=False, 
                         help='show 14 action pose of AVA.')
 
     # model
-    parser.add_argument('-v', '--version', default='yowo_v2_large', type=str,
+    parser.add_argument('-v', '--version', default='yowo_v2_medium', type=str,
                         help='build YOWOv2')
     parser.add_argument('--weight', default=None,
                         type=str, help='Trained state_dict file path to open')
@@ -220,7 +220,7 @@ def detect(args, model, device, transform, class_names, class_colors):
                 # rescale
                 bboxes = rescale_bboxes(bboxes, [orig_w, orig_h])
                 # one hot
-                frame = vis_detection(
+                frame = vis_detection_test_model(
                     frame=frame,
                     scores=scores,
                     labels=labels,
